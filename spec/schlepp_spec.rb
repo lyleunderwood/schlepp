@@ -23,7 +23,6 @@ describe Schlepp do
         end
 
         csv.map do |item|
-          p item.children.first.children
         end
 
         
