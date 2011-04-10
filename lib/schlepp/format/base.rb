@@ -1,4 +1,6 @@
 module Schlepp
+  # a Format is a class which handles reading, parsing, mapping, and grouping a
+  # file type (like CSV).
   module Format
     @cwd = ''
 
@@ -8,14 +10,22 @@ module Schlepp
 
     class Base
 
-      attr_accessor :name, :required
+      # the filename
+      # TODO: support filename glob like format.name = :glob => 'data*.csv'
+      attr_accessor :name
 
+      # defaults to false
+      attr_accessor :required
+
+      # takes a config block which receives self as parameter
       def initialize(&block)
         self.required = false
 
         block.call(self)
       end
 
+      # read the file. uses +cwd+ set by Schlepp::Burden#cd. Returns nil if no
+      # file is found.
       def read
         begin
           path = Format.cwd == '' ? name : File.join(Format.cwd, name)
@@ -25,14 +35,18 @@ module Schlepp
         end
       end
 
+      # block to run before file is read
       def before(&block)
         @before = block
       end
 
+      # block to run after file is processed
       def after(&block)
         @after = block
       end
 
+      # throws an error if a required file is not found. runs our before,
+      # then process_file, then our after.
       def process!
         data = read
         if data.nil?
@@ -41,12 +55,12 @@ module Schlepp
         end
 
         @before.call(data) if @before
-
         result = process_file(data)
-
         @after.call(result) if @after
       end
 
+      # should be implemented by subclasses. handles parsing, mapping, and
+      # grouping. returns the grouped data.
       def process_file(data)
         raise "Implement process_file in Schlepp::Format::Base #{__FILE__}"
       end
