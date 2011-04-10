@@ -1,6 +1,38 @@
-# schlepp makes it easy to normalize data from various sources like CSV. Need 
-# to go from flattened CSV to relational tables? Schlepp provides a 
-# simple DSL for mapping, grouping and importing data from and to various 
-# formats.
-#
-# At least that's the plan. Currently handles access to CSV files.
+= Schlepp
+
+== Description
+
+Schlepp makes it easy to normalize data from various sources like CSV. Need 
+to go from flattened CSV to relational tables? Schlepp provides a 
+simple DSL for mapping, grouping and importing data from and to various 
+formats.
+
+At least that's the plan. Currently handles access to CSV files.
+
+== Usage
+
+  Schlepp::Burden.new :products do
+    cd 'data/'
+  
+    glob 'catalogs/*' do |dir|
+      file 'Csv' do |csv|
+        csv.name = 'products.csv'
+        csv.load_mapping 'config/products.yml'
+        csv.groups = [3, 4]
+  
+        csv.map do |product|
+          product_record = Product.create(:name => product[:name])
+          product.children.each do |color|
+            color_record = Color.create(:name => color[:name])
+            product_record.colors << color_record
+            color.children.each do |size|
+              size_record = Size.create(:name => size[:name])
+              color.sizes << size_record
+            end
+          end
+        end
+  
+      end
+    end
+  
+  end

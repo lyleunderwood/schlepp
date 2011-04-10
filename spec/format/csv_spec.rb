@@ -192,19 +192,35 @@ describe Schlepp::Format::Csv do
   end
 
   describe '#process_file' do
+    before :each do
+      @csv = Schlepp::Format::Csv.new {}
+      @csv.stub(:parse) {|arg| arg}
+      @csv.stub(:apply_reject_lines) {|arg| arg}
+      @csv.stub(:apply_groups) {|arg| arg}
+      @csv.stub(:apply_map) {|arg| arg}
+    end
+
     it "should parse the data" do
       @csv.should_receive(:parse).with(:test).and_return(nil)
       @csv.process_file(:test)
     end
 
     it "should call #apply_reject_lines if set" do
-      @csv.stub(:parse) {:test}
       @csv.should_receive(:apply_reject_lines).with(:test).and_return(:test)
       @csv.reject_lines {}
       @csv.process_file(:test)
     end
 
-  end
+    it "should call #apply_groups" do
+      @csv.should_receive(:apply_groups).with(:test)
+      @csv.process_file(:test)
+    end
 
+    it "should call #apply_map if set" do
+      @csv.map {}
+      @csv.should_receive(:apply_map)
+      @csv.process_file(:test)
+    end
+  end
 
 end

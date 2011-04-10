@@ -27,6 +27,7 @@ module Schlepp
 
       # takes a config block which gets run through +instance_eval+.
       def initialize(&block)
+        @mapping = nil
 
         super
       end
@@ -146,7 +147,7 @@ module Schlepp
       def process_file(data)
         data = parse(data)
         data = apply_reject_lines(data) if @reject_lines
-        items = apply_grouping(data)
+        items = apply_groups(data)
         apply_map(items) if @map
       end
 

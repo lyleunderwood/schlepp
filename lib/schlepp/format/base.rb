@@ -19,6 +19,7 @@ module Schlepp
 
       # takes a config block which receives self as parameter
       def initialize(&block)
+        self.name = nil
         self.required = false
 
         block.call(self)
@@ -50,7 +51,7 @@ module Schlepp
       def process!
         data = read
         if data.nil?
-          raise "Required file not found: #{name}" if required
+          raise "Required file not found: #{File.join(Format.cwd, name)}" if required
           return
         end
 
