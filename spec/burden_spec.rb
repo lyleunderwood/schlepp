@@ -106,6 +106,19 @@ describe Schlepp::Burden do
       b.process!
     end
 
+    it "should process globs" do
+      b = init_burden
+      job = proc {|format| :test}
+      b.globs << {:path => 'cat*', :block => proc do |dir|
+        file('Nothing', &job)
+        files << :test
+      end}
+      Dir.should_receive(:glob).with('./cat*').and_return(['cat1'])
+      b.should_receive(:file).with('Nothing', &job).and_return(:wat)
+      b.should_receive(:process_job).with(:test).and_return(:test)
+      b.process!
+    end
+
     it "should call our @before" do
       processed = false
       success = mock

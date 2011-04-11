@@ -1,0 +1,14 @@
+"Product Number","Product Name","Product Desc","Color Name","Color Code","Size Name","SKU"
+1,"Product 1","some product","red",1,"small",111
+1,"Product 1","some product","red",1,"medium",112
+1,"Product 1","some product","red",1,"large",113
+1,"Product 1","some product","green",2,"small",114
+1,"Product 1","some product","green",2,"medium",115
+1,"Product 1","some product","green",2,"large",116
+,,,,,,
+2,"Product 2","some product","red",1,"small",117
+2,"Product 2","some product","red",1,"medium",118
+2,"Product 2","some product","red",1,"large",119
+2,"Product 2","some product","green",2,"small",120
+2,"Product 2","some product","green",2,"medium",121
+2,"Product 2","some product","green",2,"large",122

@@ -67,6 +67,15 @@ describe Schlepp::Format::Csv do
       CSV.should_receive(:parse).with(:data).and_return(:result)
       @csv.parse(:data).should eql :result
     end
+
+    it "should use @csv_options if defined" do
+      path = 'spec/fixtures/data/season_1/products.csv'
+      data = File.open(path).read.gsub(",", "\t")
+      options = {:col_sep => "\t"}
+      CSV.should_receive(:parse).with(data, options)
+      @csv.csv_options = options
+      @csv.parse(data)
+    end
   end
 
   describe '#apply_reject_lines' do

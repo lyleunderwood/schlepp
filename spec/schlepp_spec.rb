@@ -10,26 +10,30 @@ describe Schlepp do
   end
 
   it "should actually work" do
+    items = []
     b = Schlepp::Burden.new :test do
-      cd File.join('spec', 'fixtures', 'data', 'season_1')
-      before { puts 'starting' }
-      file 'Csv' do |csv|
-        csv.name = 'products.csv'
-        csv.required = true
-        csv.groups = [0, 4]
-        csv.load_mapping File.join('spec', 'fixtures', 'products.yml')
-        csv.reject_lines do |line|
-          line.first.nil? || line.first =~ /\s/
+      cd File.join('spec', 'fixtures', 'data')
+      glob 'season_*' do |dir|
+        file 'Csv' do |csv|
+          csv.name = File.join(dir, 'products.csv')
+          csv.required = true
+          csv.groups = [0, 4]
+          csv.load_mapping File.join('spec', 'fixtures', 'products.yml')
+          csv.reject_lines do |line|
+            line.first.nil? || line.first =~ /\s/
+          end
+  
+          csv.map do |item|
+            items << item
+          end
         end
-
-        csv.map do |item|
-        end
-
-        
       end
     end
 
     b.process!
+
+    items.size.should eql 4
+
     b.cd ''
   end
 

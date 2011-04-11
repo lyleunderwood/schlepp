@@ -25,9 +25,13 @@ module Schlepp
       # order of trunk to leaves
       attr_accessor :groups
 
+      # options hash to be passed to CSV#parse
+      attr_accessor :csv_options
+
       # takes a config block which gets run through +instance_eval+.
       def initialize(&block)
         @mapping = nil
+        @csv_options = nil
 
         super
       end
@@ -64,7 +68,11 @@ module Schlepp
 
       # runs a string through the CSV parser.
       def parse(data) # :nodoc:
-        CSV.parse(data)
+        if @csv_options.nil?
+          CSV.parse(data)
+        else
+          CSV.parse(data, @csv_options)
+        end
       end
 
       def apply_reject_lines(lines) # :nodoc:
