@@ -14,6 +14,7 @@ module Schlepp
   end
 
   autoload :Format, File.join('schlepp', 'format', 'base')
+  autoload :Db,     File.join('schlepp', 'db')
 
   module Format
     Schlepp.formats.each do |format|

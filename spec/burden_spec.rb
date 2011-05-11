@@ -7,6 +7,21 @@ describe Schlepp::Burden do
     @klass.all = []
   end
 
+  before(:all) { @original_db = Schlepp::Db }
+
+  after(:all) { suppress_warnings { Schlepp::Db = @original_db } }
+
+  def suppress_warnings
+    return unless block_given?
+    # quiet, you !
+    # TODO: maybe i can just turn off the autoloader or something?
+    original_verbosity = $VERBOSE
+    $VERBOSE = nil
+    yield
+    $VERBOSE = original_verbosity
+    # as long as i don't do this in lib/ right? ToT
+  end
+
   def init_burden(&block)
     block ||= proc {}
     Schlepp::Burden.new(:test, &block)
@@ -152,6 +167,24 @@ describe Schlepp::Burden do
     it "should set the @cwd for formats" do
       Schlepp::Format.should_receive(:cwd=).with('test')
       @burden.cd "test"
+    end
+  end
+
+  describe '#db' do
+    before do
+      suppress_warnings { Schlepp::Db = double }
+    end
+
+    it "should create a db" do
+      Schlepp::Db.stub(:new)
+      @burden.db
+      @burden.dbs.count.should eql 1
+    end
+
+    it "should pass a config block to the db" do
+      config = lambda {}
+      Schlepp::Db.should_receive(:new) {|&block| block.should eql config }
+      @burden.db &config
     end
   end
 

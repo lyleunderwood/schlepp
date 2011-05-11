@@ -3,7 +3,7 @@ module Schlepp
     # how we can access a specific Burden later
     attr_accessor :label
 
-    attr_accessor :files, :globs
+    attr_accessor :files, :globs, :dbs
 
     attr_accessor :cwd
 
@@ -18,6 +18,7 @@ module Schlepp
     def initialize(label, &block)
       @label = label
       @files = []
+      @dbs   = []
       @globs = []
       @cwd   = './'
 
@@ -26,6 +27,10 @@ module Schlepp
 
       #hold onto our new Burden
       Schlepp::Burden.all << self
+    end
+
+    def db(&block)
+      @dbs << Schlepp::Db.new(&block)
     end
 
     # takes a Schlepp::Format class name as a string and a config block
