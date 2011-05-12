@@ -99,6 +99,14 @@ describe Schlepp::Db do
       end
     end
 
+    describe '#default_scope' do
+      it "should set @default_scope" do
+        @table.default_scope do
+          limit(1)
+        end
+      end
+    end
+
     describe '#records' do
       before(:each) do
         @table.stub(:init)
@@ -184,6 +192,10 @@ describe Schlepp::Db do
     end
 
     it "should work" do
+      @table.default_scope do
+        limit(2)
+      end
+
       @table.has_many :product_colors do |product_colors|
         product_colors.has_many :product_sizes
       end

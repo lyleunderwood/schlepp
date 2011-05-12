@@ -32,7 +32,7 @@ module Schlepp
       attr_accessor :models, :associations
 
       # hooks
-      attr_accessor :before, :after, :reject, :record_fetch
+      attr_accessor :before, :after, :reject, :record_fetch, :default_scope
 
       def initialize(name, config)
         @models = []
@@ -51,13 +51,28 @@ module Schlepp
       end
 
       def build_model
+        # connect
         ActiveRecord::Base.establish_connection(db_config)
-        table_model = Class::new(ActiveRecord::Base)
+
+        # build some names
         model_name = ActiveSupport::Inflector.singularize(name.to_s)
-        table_model.set_table_name(model_name)
         class_name = ActiveSupport::Inflector.camelize(model_name)
+
+        # setting up the model
         klass = Class::new(ActiveRecord::Base)
-        @model = self.class::UserModels.const_set(class_name.intern, klass)
+        klass.set_table_name(name.to_s)
+        # this is because it needs to have a class name
+        UserModels.const_set(class_name.intern, klass)
+        @model = UserModels.const_get(class_name)
+
+        # apply the default_scope
+        if @default_scope
+          scoper = @default_scope
+          reference = klass.class_eval(&@default_scope)
+          klass.send(:default_scope, reference)
+        end
+
+        @model
       end
 
       def build_associations
@@ -111,6 +126,11 @@ module Schlepp
         @record_fetch
       end
 
+      def default_scope(&block)
+        @default_scope = block if block
+        @default_scope
+      end
+
       def has_many(subtable_name, &block)
         @associations[:has_many] << {
           id: subtable_name,
@@ -132,14 +152,6 @@ module Schlepp
         result_records.each {|record| @each.call(record) } if @each
         @after.call(self) if @after
       end
-      #   result_records = records
-
-      #   @before.call(self) if @before
-
-      #   result_records.each {|record| yield record }
-
-      #   @after.call(self) if @after
-      # end
     end
   end
 
