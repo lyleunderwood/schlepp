@@ -76,6 +76,7 @@ module Schlepp
       @before.call(self) if @before
       globs.each {|glob| process_glob(glob)}
       files.each {|file| process_job(file)}
+      dbs.each {|db| process_job(db)}
       @after.call(self) if @after
     end
 

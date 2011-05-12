@@ -16,7 +16,12 @@ module Schlepp
     def table(name)
       table = Table.new(name, config)
       @tables << table
+      yield table if block_given?
       table
+    end
+
+    def process!
+      @tables.each {|table| table.process! }
     end
 
     class Table
@@ -91,6 +96,11 @@ module Schlepp
         @after
       end
 
+      def each(&block)
+        @each = block if block
+        @each
+      end
+
       def reject(&block)
         @reject = block if block
         @reject
@@ -114,16 +124,22 @@ module Schlepp
         self.init
         @records = @record_fetch ? @record_fetch.call(@model) : @model.all
       end
-
-      def each
+      
+      def process!
         result_records = records
 
         @before.call(self) if @before
-
-        result_records.each {|record| yield record }
-
+        result_records.each {|record| @each.call(record) } if @each
         @after.call(self) if @after
       end
+      #   result_records = records
+
+      #   @before.call(self) if @before
+
+      #   result_records.each {|record| yield record }
+
+      #   @after.call(self) if @after
+      # end
     end
   end
 

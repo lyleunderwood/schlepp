@@ -134,6 +134,14 @@ describe Schlepp::Burden do
       b.process!
     end
 
+    it "should process dbs" do
+      b = init_burden
+      db = mock
+      b.dbs << db
+      b.should_receive(:process_job).with(db).and_return(nil)
+      b.process!
+    end
+
     it "should call our @before" do
       processed = false
       success = mock
@@ -176,8 +184,10 @@ describe Schlepp::Burden do
     end
 
     it "should create a db" do
-      Schlepp::Db.stub(:new)
+      test = double
+      Schlepp::Db.stub(:new) {test}
       @burden.db
+      @burden.dbs.first.should eql test
       @burden.dbs.count.should eql 1
     end
 

@@ -30,6 +30,15 @@ describe Schlepp::Db do
     end
   end
 
+  describe '#process!' do
+    it "should process all the tables" do
+      table = double
+      table.should_receive(:process!)
+      @db.tables << table
+      @db.process!
+    end
+  end
+
   describe Schlepp::Db::Table do
     before(:each) do
       @table = @db.table :products
@@ -66,6 +75,13 @@ describe Schlepp::Db do
       it "should set @before" do
         @table.before do; end;
         @table.before.should eql(proc {})
+      end
+    end
+
+    describe '#each' do
+      it "should set @each" do
+        @table.each do; end;
+        @table.each.should eql(proc {})
       end
     end
 
@@ -139,13 +155,15 @@ describe Schlepp::Db do
       end
     end
 
-    describe '#each' do
-      it "should yield rows" do
+    describe '#process' do
+      it "should call @each with rows" do
         executed = 0
         @table.each do |row|
           executed = executed.next
           row.should be_a @table.model
         end
+
+        @table.process!
 
         executed.should eql 2
       end
@@ -153,14 +171,14 @@ describe Schlepp::Db do
       it "should call our before" do
         executed = false
         @table.before { executed = true }
-        @table.each {}
+        @table.process!
         executed.should eql true
       end
 
       it "should call our after" do
         executed = false
         @table.after { executed = true }
-        @table.each {}
+        @table.process!
         executed.should eql true
       end
     end
@@ -170,11 +188,16 @@ describe Schlepp::Db do
         product_colors.has_many :product_sizes
       end
 
+      rows = []
       @table.each do |row|
-        p row
-        p row.product_colors
-        p row.product_colors.first.product_sizes
+        rows << row
       end
+
+      @table.process!
+
+      rows.count.should eql 2
+      rows.first.product_colors.count.should eql 2
+      rows.first.product_colors.first.product_sizes.count.should eql 3
     end
   end
 
