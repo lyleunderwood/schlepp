@@ -34,5 +34,34 @@ At least that's the plan. Currently handles access to CSV files.
   
       end
     end
+
+    db do |database|
+      database.config = {
+        adapter:  'mysql',
+        host:     'localhost',
+        username: 'root',
+        password: 'root',
+        database: 'test_db'
+      }
+
+      database.table :posts do |posts|
+        posts.default_scope do
+          where(:is_deleted => false)
+        end
+
+        posts.has_many :comments do |comments|
+          comments.default_scope do
+            limit(2)
+          end
+        end
+
+        posts.each do |post|
+          # post is now an instance of a model descended from ActiveRecord::Base
+          # meaning post.comments works fine, or any other AR stuff.
+          # you would do something with the post here.
+        end
+      end
+
+    end
   
   end
