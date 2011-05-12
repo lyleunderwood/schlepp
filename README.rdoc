@@ -35,6 +35,8 @@ At least that's the plan. Currently handles access to CSV files.
       end
     end
 
+    # Schlepp::Db uses ActiveRecord internally, so AR style configuration and
+    # manipulation.
     db do |database|
       database.config = {
         adapter:  'mysql',

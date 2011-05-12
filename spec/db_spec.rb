@@ -139,7 +139,13 @@ describe Schlepp::Db do
         @table.has_many :product_colors
         @table.associations[:has_many].count.should eql 1
       end
+    end
 
+    describe '#belongs_to' do
+      it "should add a belongs_to association" do
+        @table.belongs_to :something
+        @table.associations[:belongs_to].count.should eql 1
+      end
     end
 
     describe '#build_model' do
