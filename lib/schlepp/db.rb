@@ -66,6 +66,7 @@ module Schlepp
         # setting up the model
         klass = Class::new(ActiveRecord::Base)
         klass.set_table_name(name.to_s)
+        klass.set_primary_key('id')
         # this is because it needs to have a class name
         UserModels.const_set(class_name.intern, klass)
         @model = UserModels.const_get(class_name)
@@ -105,15 +106,8 @@ module Schlepp
       def build_belongs_to(assoc, subtable)
         assoc[:block].call(subtable) if assoc[:block]
         subtable.init
-        @model.belongs_to assoc[:id], :class_name => subtable.model.name
-        #subtable.model.has_many name, :class_name => @model.name
-      end
-
-      def build_has_one(assoc, subtable)
-        assoc[:block].call(subtable) if assoc[:block]
-        subtable.init
-        @model.has_one assoc[:id], :class_name => subtable.model.name
-        subtable.model.belongs_to name, :class_name => @model.name
+        single_id = ActiveSupport::Inflector.singularize(assoc[:id])
+        @model.belongs_to single_id, :class_name => subtable.model.name
       end
 
       def before(&block)

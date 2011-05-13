@@ -171,12 +171,11 @@ describe Schlepp::Db do
       it "should build belongs_tos" do
         @table.build_model
         @table.associations[:belongs_to] << {
-          id: :catalog
+          id: :catalogs
         }
 
         @table.build_associations
-        #p @table.model.first.catalog.build
-        #@table.model.first.catalog.should be
+        @table.model.first.catalog.should be
       end
     end
 
