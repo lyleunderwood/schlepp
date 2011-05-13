@@ -85,6 +85,9 @@ module Schlepp
         @associations[:has_many].each do |assoc|
           build_has_many(assoc, build_subtable(assoc))
         end
+        @associations[:has_one].each do |assoc|
+          build_has_one(assoc, build_subtable(assoc))
+        end
         @associations[:belongs_to].each do |assoc|
           build_belongs_to(assoc, build_subtable(assoc))
         end
@@ -100,6 +103,13 @@ module Schlepp
         assoc[:block].call(subtable) if assoc[:block]
         subtable.init
         @model.has_many assoc[:id], :class_name => subtable.model.name
+        subtable.model.belongs_to name, :class_name => @model.name
+      end
+
+      def build_has_one(assoc, subtable)
+        assoc[:block].call(subtable) if assoc[:block]
+        subtable.init
+        @model.has_one assoc[:id], :class_name => subtable.model.name
         subtable.model.belongs_to name, :class_name => @model.name
       end
 
@@ -142,6 +152,13 @@ module Schlepp
 
       def has_many(subtable_name, &block)
         @associations[:has_many] << {
+          id: subtable_name,
+          block: block
+        }
+      end
+
+      def has_one(subtable_name, &block)
+        @associations[:has_one] << {
           id: subtable_name,
           block: block
         }
