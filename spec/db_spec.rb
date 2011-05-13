@@ -167,6 +167,17 @@ describe Schlepp::Db do
         @table.build_associations
         @table.model.first.product_colors.should be
       end
+
+      it "should build belongs_tos" do
+        @table.build_model
+        @table.associations[:belongs_to] << {
+          id: :catalog
+        }
+
+        @table.build_associations
+        #p @table.model.first.catalog.build
+        #@table.model.first.catalog.should be
+      end
     end
 
     describe '#process' do

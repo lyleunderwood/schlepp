@@ -106,7 +106,7 @@ module Schlepp
         assoc[:block].call(subtable) if assoc[:block]
         subtable.init
         @model.belongs_to assoc[:id], :class_name => subtable.model.name
-        #subtable.model.belongs_to name, :class_name => @model.name
+        #subtable.model.has_many name, :class_name => @model.name
       end
 
       def build_has_one(assoc, subtable)
