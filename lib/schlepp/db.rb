@@ -109,7 +109,8 @@ module Schlepp
       def build_has_one(assoc, subtable)
         assoc[:block].call(subtable) if assoc[:block]
         subtable.init
-        @model.has_one assoc[:id], :class_name => subtable.model.name
+        single_id = ActiveSupport::Inflector.singularize(assoc[:id])
+        @model.has_one single_id, :class_name => subtable.model.name
         subtable.model.belongs_to name, :class_name => @model.name
       end
 
