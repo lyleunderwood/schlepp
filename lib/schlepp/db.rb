@@ -63,7 +63,7 @@ module Schlepp
         model_name = ActiveSupport::Inflector.singularize(name.to_s)
         class_name = ActiveSupport::Inflector.camelize(model_name)
 
-        unless UserModels.const_defined?(class_name)
+        unless UserModels.const_defined?(class_name, false)
           # setting up the model
           klass = Class::new(ActiveRecord::Base)
           klass.set_table_name(name.to_s)
