@@ -51,7 +51,8 @@ At least that's the plan. Currently handles access to CSV files.
           where(:is_deleted => false)
         end
 
-        posts.has_many :comments do |comments|
+        # association options are passed to the corresponding AR method
+        posts.has_many :comments, :class_name => 'CoolComments' do |comments|
           comments.default_scope do
             limit(2)
           end
