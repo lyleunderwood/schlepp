@@ -105,24 +105,39 @@ module Schlepp
       def build_has_many(assoc, subtable)
         assoc[:block].call(subtable) if assoc[:block]
         subtable.init
-        @model.has_many assoc[:id], :class_name => subtable.model.name
-        subtable.model.belongs_to name, :class_name => @model.name
+
+        opts = {class_name: subtable.model.name}
+        opts.merge!(assoc[:options]) if assoc[:options]
+
+        single_name = ActiveSupport::Inflector.singularize(name).to_sym
+
+        @model.has_many assoc[:id], opts
+        subtable.model.belongs_to single_name, :class_name => @model.name
       end
 
       def build_has_one(assoc, subtable)
         assoc[:block].call(subtable) if assoc[:block]
         subtable.init
-        single_id = ActiveSupport::Inflector.singularize(assoc[:id])
-        single_name = ActiveSupport::Inflector.singularize(name)
-        @model.has_one single_id, :class_name => subtable.model.name
+
+        opts = {class_name: subtable.model.name}
+        opts.merge!(assoc[:options]) if assoc[:options]
+
+        single_id = ActiveSupport::Inflector.singularize(assoc[:id]).to_sym
+        single_name = ActiveSupport::Inflector.singularize(name).to_sym
+
+        @model.has_one single_id, opts
         subtable.model.belongs_to single_name, :class_name => @model.name
       end
 
       def build_belongs_to(assoc, subtable)
         assoc[:block].call(subtable) if assoc[:block]
         subtable.init
-        single_id = ActiveSupport::Inflector.singularize(assoc[:id])
-        @model.belongs_to single_id, :class_name => subtable.model.name
+
+        opts = {class_name: subtable.model.name}
+        opts.merge!(assoc[:options]) if assoc[:options]
+
+        single_id = ActiveSupport::Inflector.singularize(assoc[:id]).to_sym
+        @model.belongs_to single_id, opts
       end
 
       def before(&block)
@@ -155,24 +170,27 @@ module Schlepp
         @default_scope
       end
 
-      def has_many(subtable_name, &block)
+      def has_many(subtable_name, opts = nil, &block)
         @associations[:has_many] << {
           id: subtable_name,
-          block: block
+          block: block,
+          options: opts
         }
       end
 
-      def has_one(subtable_name, &block)
+      def has_one(subtable_name, opts = nil, &block)
         @associations[:has_one] << {
           id: subtable_name,
-          block: block
+          block: block,
+          options: opts
         }
       end
 
-      def belongs_to(subtable_name, &block)
+      def belongs_to(subtable_name, opts = nil, &block)
         @associations[:belongs_to] << {
           id: subtable_name,
-          block: block
+          block: block,
+          options: opts
         }
       end
 

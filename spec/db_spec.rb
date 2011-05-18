@@ -139,12 +139,37 @@ describe Schlepp::Db do
         @table.has_many :product_colors
         @table.associations[:has_many].count.should eql 1
       end
+
+      it "should take arbitrary options" do
+        opts = {is_true: true}
+        @table.has_many :product_colors, opts
+        @table.associations[:has_many].first[:options].should eql opts
+      end
+    end
+
+    describe '#has_one' do
+      it "should add a has_one association" do
+        @table.has_one :anything
+        @table.associations[:has_one].count.should eql 1
+      end
+
+      it "should take arbitrary options" do
+        opts = {is_true: true}
+        @table.has_one :product_colors, opts
+        @table.associations[:has_one].first[:options].should eql opts
+      end
     end
 
     describe '#belongs_to' do
       it "should add a belongs_to association" do
         @table.belongs_to :something
         @table.associations[:belongs_to].count.should eql 1
+      end
+
+      it "should take arbitrary options" do
+        opts = {is_true: true}
+        @table.belongs_to :product_colors, opts
+        @table.associations[:belongs_to].first[:options].should eql opts
       end
     end
 
@@ -160,22 +185,168 @@ describe Schlepp::Db do
     describe '#build_associations' do
       it "should build has_manys" do
         @table.build_model
-        @table.associations[:has_many] << {
-          id: :product_colors
-        }
+        assoc = {id: :product_colors}
+        @table.associations[:has_many] << assoc
 
+        @table.should_receive(:build_has_many)
         @table.build_associations
-        @table.model.first.product_colors.should be
       end
 
       it "should build belongs_tos" do
         @table.build_model
-        @table.associations[:belongs_to] << {
-          id: :catalogs
-        }
+        assoc = {id: :product_colors}
+        @table.associations[:belongs_to] << assoc
 
+        @table.should_receive(:build_belongs_to)
         @table.build_associations
-        @table.model.first.catalog.should be
+      end
+
+      it "should build has_ones" do
+        @table.build_model
+        assoc = {id: :product_colors}
+        @table.associations[:has_one] << assoc
+
+        @table.should_receive(:build_has_one)
+        @table.build_associations
+      end
+    end
+
+    context 'relations' do
+      before(:each) do
+        @table.model = double
+        @table.model.stub(:belongs_to)
+        @table.model.stub(:has_many)
+        @table.model.stub(:has_one)
+        @table.model.stub(:name) {:source}
+        @subtable = double
+        @subtable.stub(:init)
+        sub_model = double
+        @subtable.stub(:model) {sub_model}
+        sub_model.stub(:belongs_to)
+        sub_model.stub(:name) {:target}
+      end
+
+      describe '#build_has_many' do
+        it "should setup a has_many on the model" do
+          opts = {class_name: :target}
+          @table.model.should_receive(:has_many).with(:colors, opts)
+          @table.build_has_many({id: :colors}, @subtable)
+        end
+
+        it "should init the submodel" do
+          @subtable.should_receive(:init)
+          @table.build_has_many({id: :colors}, @subtable)
+        end
+
+        it "should pass the subtable to the association config block" do
+          executed = false
+          assoc = {
+            id: :colors,
+            block: proc do |subtable|
+              subtable.should eql @subtable
+              executed = true
+            end
+          }
+
+          @table.build_has_many(assoc, @subtable)
+          executed.should be_true
+        end
+
+        it "should setup a belongs_to on the target" do
+          opts = {class_name: :source}
+          @subtable.model.should_receive(:belongs_to).with(:product, opts)
+          @table.build_has_many({id: :colors}, @subtable)
+        end
+
+        it "should pass options to the relation" do
+          assoc_options = {is_true: true, class_name: :target}
+          assoc = {
+            id: :colors,
+            options: {is_true: true}
+          }
+          @table.model.should_receive(:has_many).with(:colors, assoc_options)
+          @table.build_has_many(assoc, @subtable)
+        end
+      end
+
+      describe '#build_has_one' do
+        it "should setup a has_one on the model" do
+          opts = {class_name: :target}
+          @table.model.should_receive(:has_one).with(:color, opts)
+          @table.build_has_one({id: :colors}, @subtable)
+        end
+
+        it "should init the submodel" do
+          @subtable.should_receive(:init)
+          @table.build_has_one({id: :colors}, @subtable)
+        end
+
+        it "should pass the subtable to the association config block" do
+          executed = false
+          assoc = {
+            id: :colors,
+            block: proc do |subtable|
+              subtable.should eql @subtable
+              executed = true
+            end
+          }
+
+          @table.build_has_one(assoc, @subtable)
+          executed.should be_true
+        end
+
+        it "should setup a belongs_to on the target" do
+          opts = {class_name: :source}
+          @subtable.model.should_receive(:belongs_to).with(:product, opts)
+          @table.build_has_one({id: :colors}, @subtable)
+        end
+
+        it "should pass options to the relation" do
+          assoc_options = {is_true: true, class_name: :target}
+          assoc = {
+            id: :colors,
+            options: {is_true: true}
+          }
+          @table.model.should_receive(:has_one).with(:color, assoc_options)
+          @table.build_has_one(assoc, @subtable)
+        end
+      end
+
+      describe '#build_belongs_to' do
+        it "should setup a belongs_to on the model" do
+          opts = {class_name: :target}
+          @table.model.should_receive(:belongs_to).with(:color, opts)
+          @table.build_belongs_to({id: :colors}, @subtable)
+        end
+
+        it "should init the submodel" do
+          @subtable.should_receive(:init)
+          @table.build_belongs_to({id: :colors}, @subtable)
+        end
+
+        it "should pass the subtable to the association config block" do
+          executed = false
+          assoc = {
+            id: :colors,
+            block: proc do |subtable|
+              subtable.should eql @subtable
+              executed = true
+            end
+          }
+
+          @table.build_belongs_to(assoc, @subtable)
+          executed.should be_true
+        end
+
+        it "should pass options to the relation" do
+          assoc_options = {is_true: true, class_name: :target}
+          assoc = {
+            id: :colors,
+            options: {is_true: true}
+          }
+          @table.model.should_receive(:belongs_to).with(:color, assoc_options)
+          @table.build_belongs_to(assoc, @subtable)
+        end
       end
     end
 
