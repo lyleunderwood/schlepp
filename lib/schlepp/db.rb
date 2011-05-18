@@ -47,6 +47,12 @@ module Schlepp
         @db_config = config
       end
 
+      def model_class_name
+        prefix = UserModels.name + '::'
+        single_name = ActiveSupport::Inflector.singularize(name.to_s)
+        prefix + ActiveSupport::Inflector.camelize(single_name)
+      end
+
       module UserModels; end;
 
       def init

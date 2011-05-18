@@ -64,6 +64,12 @@ describe Schlepp::Db do
       end
     end
 
+    describe '#model_class_name' do
+      it "should guess the proper name of the @model to be" do
+        @table.model_class_name.should eql 'Schlepp::Db::Table::UserModels::Product'
+      end
+    end
+
     describe '#after' do
       it "should set @after" do
         @table.after do; end;
