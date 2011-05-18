@@ -63,19 +63,22 @@ module Schlepp
         model_name = ActiveSupport::Inflector.singularize(name.to_s)
         class_name = ActiveSupport::Inflector.camelize(model_name)
 
-        # setting up the model
-        klass = Class::new(ActiveRecord::Base)
-        klass.set_table_name(name.to_s)
-        klass.set_primary_key('id')
-        # this is because it needs to have a class name
-        UserModels.const_set(class_name.intern, klass)
+        unless UserModels.const_defined?(class_name)
+          # setting up the model
+          klass = Class::new(ActiveRecord::Base)
+          klass.set_table_name(name.to_s)
+          klass.set_primary_key('id')
+          # this is because it needs to have a class name
+          UserModels.const_set(class_name.intern, klass)
+        end
+
         @model = UserModels.const_get(class_name)
 
         # apply the default_scope
         if @default_scope
           scoper = @default_scope
-          reference = klass.class_eval(&@default_scope)
-          klass.send(:default_scope, reference)
+          reference = @model.class_eval(&@default_scope)
+          @model.send(:default_scope, reference)
         end
 
         @model
