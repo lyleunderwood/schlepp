@@ -1,3 +1,5 @@
+require 'iconv'
+
 module Schlepp
   # a Format is a class which handles reading, parsing, mapping, and grouping a
   # file type (like CSV).
@@ -17,6 +19,9 @@ module Schlepp
       # defaults to false
       attr_accessor :required
 
+      # encoding of original file; we are going to convert this to utf-8
+      attr_accessor :encoding
+
       # takes a config block which receives self as parameter
       def initialize(&block)
         self.name = nil
@@ -30,7 +35,9 @@ module Schlepp
       def read
         begin
           path = Format.cwd == '' ? name : File.join(Format.cwd, name)
-          File.open(path)
+          io = File.open(path)
+          io = Iconv.conv('utf-8', @encoding, io) if @encoding
+          io
         rescue
           nil
         end

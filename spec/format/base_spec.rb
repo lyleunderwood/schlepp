@@ -34,12 +34,27 @@ describe Schlepp::Format::Base do
     it "should use Format.cwd" do
       @format.name = 'test'
       Schlepp::Format.cwd = 'data/'
-      File.should_receive(:open).with('data/test')
+      File.should_receive(:open).with('data/test').and_return(:true)
       @format.read
     end
 
     it "should return nil when it can't find the file" do
       @format.read.should eql nil
+    end
+
+    it "should apply our encoding" do
+      @format.name = 'test'
+      @format.encoding = 'latin1'
+      File.stub(:open) {:true}
+      Iconv.should_receive(:conv).with('utf-8', 'latin1', :true).and_return(:text)
+      @format.read.should eql :text
+    end
+
+    it "should not bother converting if no encoding specified" do
+      @format.name = 'test'
+      File.stub(:open) {:true}
+      Iconv.should_receive(:conv).exactly(0).times
+      @format.read.should eql :true
     end
   end
 
@@ -86,6 +101,17 @@ describe Schlepp::Format::Base do
       @format.process!
     end
 
+  end
+
+  describe '#encoding=' do
+    it "should default to nil" do
+      @format.encoding.should eql nil
+    end
+
+    it "should set our encoding" do
+      @format.encoding = 'latin1'
+      @format.encoding.should eql 'latin1'
+    end
   end
 
 end
