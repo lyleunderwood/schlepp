@@ -221,6 +221,7 @@ describe Schlepp::Format::Csv do
     end
 
     it "should call #apply_groups" do
+      @csv.groups = [1]
       @csv.should_receive(:apply_groups).with(:test)
       @csv.process_file(:test)
     end
