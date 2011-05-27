@@ -37,7 +37,7 @@ module Schlepp
         path = Format.cwd == '' ? name : File.join(Format.cwd, name)
         return nil unless File.exists? path
         io = File.open(path)
-        io = Iconv.conv('utf-8', @encoding, io) if @encoding
+        io = Iconv.conv('utf-8', @encoding, io.read) if @encoding
         io
       end
 

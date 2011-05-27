@@ -48,7 +48,9 @@ describe Schlepp::Format::Base do
       File.stub(:exists?) { true }
       @format.name = 'test'
       @format.encoding = 'latin1'
-      File.stub(:open) {:true}
+      data = mock
+      data.stub(:read) {:true}
+      File.stub(:open) {data}
       Iconv.should_receive(:conv).with('utf-8', 'latin1', :true).and_return(:text)
       @format.read.should eql :text
     end
