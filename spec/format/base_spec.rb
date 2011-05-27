@@ -26,12 +26,14 @@ describe Schlepp::Format::Base do
 
   describe '#read' do
     it "should get the file data" do
+      File.stub(:exists?) { true }
       @format.name = 'test.csv'
       File.should_receive(:open).with('test.csv').and_return(:true)
       @format.read.should eql :true
     end
 
     it "should use Format.cwd" do
+      File.stub(:exists?) { true }
       @format.name = 'test'
       Schlepp::Format.cwd = 'data/'
       File.should_receive(:open).with('data/test').and_return(:true)
@@ -43,6 +45,7 @@ describe Schlepp::Format::Base do
     end
 
     it "should apply our encoding" do
+      File.stub(:exists?) { true }
       @format.name = 'test'
       @format.encoding = 'latin1'
       File.stub(:open) {:true}
@@ -51,6 +54,7 @@ describe Schlepp::Format::Base do
     end
 
     it "should not bother converting if no encoding specified" do
+      File.stub(:exists?) { true }
       @format.name = 'test'
       File.stub(:open) {:true}
       Iconv.should_receive(:conv).exactly(0).times

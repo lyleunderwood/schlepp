@@ -33,14 +33,12 @@ module Schlepp
       # read the file. uses +cwd+ set by Schlepp::Burden#cd. Returns nil if no
       # file is found.
       def read
-        begin
-          path = Format.cwd == '' ? name : File.join(Format.cwd, name)
-          io = File.open(path)
-          io = Iconv.conv('utf-8', @encoding, io) if @encoding
-          io
-        rescue
-          nil
-        end
+        return nil unless name
+        path = Format.cwd == '' ? name : File.join(Format.cwd, name)
+        return nil unless File.exists? path
+        io = File.open(path)
+        io = Iconv.conv('utf-8', @encoding, io) if @encoding
+        io
       end
 
       # block to run before file is read
