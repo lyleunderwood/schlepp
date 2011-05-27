@@ -155,8 +155,8 @@ module Schlepp
       def process_file(data)
         data = parse(data)
         data = apply_reject_lines(data) if @reject_lines
-        items = apply_groups(data) if @groups
-        apply_map(items) if @map
+        data = apply_groups(data) if @groups
+        apply_map(data) if @map
       end
 
     end
