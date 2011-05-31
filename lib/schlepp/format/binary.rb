@@ -24,7 +24,7 @@ module Schlepp
 
       def process_glob glob
         Dir.glob(File.join(Format.cwd, glob[:path])).each do |path|
-          instance_exec(path, &glob[:block])
+          glob[:block].call(path)
         end
       end
 
