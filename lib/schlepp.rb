@@ -7,7 +7,7 @@
 require 'schlepp/burden'
 
 module Schlepp
-  @formats = ['Csv']
+  @formats = ['Csv', 'Binary']
 
   class << self
     attr_accessor :formats
