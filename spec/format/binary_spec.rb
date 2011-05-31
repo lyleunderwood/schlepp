@@ -9,7 +9,8 @@ describe Schlepp::Format::Binary do
   describe '#glob' do
     it "should add a path to @globs" do
       blk = lambda {}
-      @binary.glob 'something', &blk
+      @binary.glob File.join('anything') do |something|
+      end
       @binary.globs.count.should eql 1
     end
   end

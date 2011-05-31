@@ -6,9 +6,9 @@ module Schlepp
       attr_accessor :globs
 
       def initialize
-        super
-
         @globs = []
+
+        super
       end
 
       def glob(path, &block)
