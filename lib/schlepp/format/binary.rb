@@ -16,7 +16,7 @@ module Schlepp
       end
 
       def process!
-        @before.call(data) if @before
+        @before.call(self) if @before
 
         globs.each {|glob| process_glob(glob)}
         @after.call(result) if @after
