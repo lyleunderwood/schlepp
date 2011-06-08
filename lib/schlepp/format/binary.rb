@@ -19,7 +19,7 @@ module Schlepp
         @before.call(self) if @before
 
         globs.each {|glob| process_glob(glob)}
-        @after.call(result) if @after
+        @after.call(self) if @after
       end
 
       def process_glob glob
