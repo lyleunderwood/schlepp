@@ -6,6 +6,8 @@
 # At least that's the plan. Currently handles access to CSV files.
 require 'schlepp/burden'
 
+require 'schlepp/railtie' if defined?(Rails)
+
 module Schlepp
   @formats = ['Csv', 'Binary']
 

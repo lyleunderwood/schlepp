@@ -164,6 +164,35 @@ describe Schlepp::Burden do
       @burden.process!
     end
   end
+  
+  context "batch jobs" do
+    before(:each) do
+      Schlepp::Burden.all = []
+      @jobs = [mock, mock]
+      Schlepp::Burden.all = @jobs
+    end
+
+    describe '.find' do
+      it "should find the job given the label" do
+        @jobs.each_with_index {|j,i| j.stub(:label) { i.to_s.to_sym }}
+        Schlepp::Burden.find(:"1").should eql @jobs.last
+      end
+    end
+
+    describe '.process' do
+      it "should run process! on all jobs by default" do
+        @jobs.each {|j| j.should_receive(:process!)}
+        Schlepp::Burden.process
+      end
+
+      it "should call process on the correct job when given a label" do
+        @jobs.each_with_index {|j,i| j.stub(:label) { i.to_s.to_sym }}
+        @jobs.first.should_receive(:process!).exactly(0).times
+        @jobs.last.should_receive(:process!).once
+        Schlepp::Burden.process(:"1")
+      end
+    end
+  end
 
   describe '#cd' do
     it "should set the @cwd" do

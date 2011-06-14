@@ -12,6 +12,29 @@ module Schlepp
 
     class << self
       attr_accessor :all
+
+      # find task for given label
+      def find(needle)
+        all.each {|b| return b if b.label == needle}
+        nil
+      end
+
+      # process all tasks or task for given label
+      def process(label = nil)
+        processed = false
+        if label
+          burden = find(label)
+          return false unless burden
+          burden.process!
+          return true
+        else
+          all.each do |burden|
+            processed = true
+            burden.process!
+          end
+        end
+        processed
+      end
     end
 
     # takes a config block
