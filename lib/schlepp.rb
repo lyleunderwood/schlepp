@@ -9,7 +9,7 @@ require 'schlepp/burden'
 require 'schlepp/railtie' if defined?(Rails)
 
 module Schlepp
-  @formats = ['Csv', 'Binary']
+  @formats = ['Csv', 'Binary', 'Xml']
 
   class << self
     attr_accessor :formats
