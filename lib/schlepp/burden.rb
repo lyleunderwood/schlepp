@@ -61,7 +61,7 @@ module Schlepp
       @files << Schlepp::Format.const_get(format).new(&block)
     end
 
-    # takes a glob string and a block. the block is called for every item 
+    # takes a glob string and a block. the block is called for every item
     # in the globbed path.
     def glob(path, &block)
       @globs << {:path => path, :block => block}
@@ -94,6 +94,10 @@ module Schlepp
       @after_each = block
     end
 
+    def on_error(&block)
+      @on_error = block
+    end
+
     # run all jobs
     def process!
       @before.call(self) if @before
@@ -108,9 +112,12 @@ module Schlepp
       result = job.process!
       @after_each.call(result, job) if @after_each
       result
+
+    rescue Exception
+      raise unless @on_error.call($!, job, self) == true
     end
 
-    # globs are basically used for making new jobs based on globbed files in a 
+    # globs are basically used for making new jobs based on globbed files in a
     # directory
     def process_glob glob
       Dir.glob(File.join(@cwd, glob[:path])).each do |path|

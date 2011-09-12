@@ -73,6 +73,14 @@ describe Schlepp::Burden do
     end
   end
 
+  describe '#on_error' do
+    it "should set @on_error callback" do
+      cb = proc { true }
+      @burden.on_error(&cb)
+      @burden.instance_variable_get(:@on_error).should eql cb
+    end
+  end
+
   describe '#process_job' do
     it "should call process! on the job" do
       job = mock
@@ -88,9 +96,9 @@ describe Schlepp::Burden do
 
       success.should_receive(:called).with(job)
 
-      b = init_burden do 
-        before_each do |job| 
-          success.called(job) unless processed 
+      b = init_burden do
+        before_each do |job|
+          success.called(job) unless processed
         end
       end
 
@@ -163,8 +171,63 @@ describe Schlepp::Burden do
       @burden.after {|job| success.called if processed}
       @burden.process!
     end
+
+    it "should rescue with our @on_error" do
+      success = mock
+      success.should_receive(:called)
+      file = mock
+      file.stub(:process!) {raise Exception.new}
+      @burden.files << file
+      @burden.on_error { success.called }
+      expect { @burden.process! }.to raise_error
+    end
+
+    it "should send proper params to @on_error" do
+      the_error = Exception.new
+      file = mock
+      file.stub(:process!) {raise the_error}
+      @burden.files << file
+      @burden.on_error do |error, job, burden|
+        error.should eql the_error
+        job.should eql file
+        burden.should eql @burden
+        true
+      end
+
+      @burden.process!
+    end
+
+    it "should continue if @on_error returns true" do
+      the_error = Exception.new
+      file = mock
+      file.stub(:process!) {raise the_error}
+      @burden.files << file
+      @burden.on_error do |error, job, burden|
+        error.should eql the_error
+        job.should eql file
+        burden.should eql @burden
+        true
+      end
+
+      expect { @burden.process! }.to_not raise_error
+    end
+
+    it "should not continue if @on_error returns false" do
+      the_error = Exception.new
+      file = mock
+      file.stub(:process!) {raise the_error}
+      @burden.files << file
+      @burden.on_error do |error, job, burden|
+        error.should eql the_error
+        job.should eql file
+        burden.should eql @burden
+        false
+      end
+
+      expect { @burden.process! }.to raise_error
+    end
   end
-  
+
   context "batch jobs" do
     before(:each) do
       Schlepp::Burden.all = []
