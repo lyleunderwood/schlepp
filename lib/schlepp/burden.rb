@@ -114,7 +114,7 @@ module Schlepp
       result
 
     rescue Exception
-      raise unless @on_error.call($!, job, self) == true
+      raise unless @on_error && @on_error.call($!, job, self) == true
     end
 
     # globs are basically used for making new jobs based on globbed files in a
