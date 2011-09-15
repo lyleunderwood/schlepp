@@ -47,7 +47,7 @@ describe Schlepp::Format::Csv do
   end
 
   describe '#after_line' do
-    it "should set our @after_line block" do 
+    it "should set our @after_line block" do
       after_proc = proc {|line| line}
       @csv.after_line(&after_proc)
       @csv.instance_variable_get(:@after_line).should eql after_proc
@@ -139,8 +139,8 @@ describe Schlepp::Format::Csv do
     it "should build items based on mapping" do
       line = ['01', 'product 1', 'red', 'small']
       @csv.mapping = [
-        {:number => 0, :name => 1}, 
-        {:color_name => 2}, 
+        {:number => 0, :name => 1},
+        {:color_name => 2},
         {:size_name => 3}
       ]
       result = @csv.build_items(line)
@@ -155,8 +155,8 @@ describe Schlepp::Format::Csv do
     it "should be able to conditionally build by group" do
       line = ['01', 'product 1', 'red', 'small']
       @csv.mapping = [
-        {:number => 0, :name => 1}, 
-        {:color_name => 2}, 
+        {:number => 0, :name => 1},
+        {:color_name => 2},
         {:size_name => 3}
       ]
       result = @csv.build_items(line, 1)
@@ -200,11 +200,89 @@ describe Schlepp::Format::Csv do
     end
   end
 
+  describe '#sort_columns' do
+    it "should sort a column" do
+      data = [
+        ['a', 'one'],
+        ['c', 'three'],
+        ['b', 'two']
+      ]
+      final = [
+        ['a', 'one'],
+        ['b', 'two'],
+        ['c', 'three']
+      ]
+      @csv.sort_on = [0]
+      @csv.sort_columns(data).should eql final
+    end
+
+    it "should sort multiple columns" do
+      data = [
+        ['a', '4'],
+        ['c', '4'],
+        ['c', '2'],
+        ['c', '1'],
+        ['b', '2'],
+        ['b', '3'],
+        ['c', '3'],
+        ['c', '5'],
+        ['b', '5'],
+        ['b', '1']
+      ]
+      final = [
+        ['a', '4'],
+        ['b', '1'],
+        ['b', '2'],
+        ['b', '3'],
+        ['b', '5'],
+        ['c', '1'],
+        ['c', '2'],
+        ['c', '3'],
+        ['c', '4'],
+        ['c', '5']
+      ]
+      @csv.sort_on = [0,1]
+      @csv.sort_columns(data).should eql final
+    end
+
+    it "should not be reliable for maintaining lower sort order" do
+      data = [
+        ['a', '4'],
+        ['c', '4'],
+        ['c', '2'],
+        ['c', '1'],
+        ['b', '2'],
+        ['b', '3'],
+        ['c', '3'],
+        ['c', '5'],
+        ['b', '5'],
+        ['b', '1']
+      ]
+      final = [
+        ['a', '4'],
+        ['b', '2'],
+        ['b', '3'],
+        ['b', '5'],
+        ['b', '1'],
+        ['c', '3'],
+        ['c', '5'],
+        ['c', '4'],
+        ['c', '2'],
+        ['c', '1']
+      ]
+      @csv.sort_on = [0]
+      @csv.sort_columns(data).should_not eql final
+    end
+  end
+
+
+
   describe '#process_file' do
     before :each do
       @csv = Schlepp::Format::Csv.new {}
       @csv.stub(:parse) {|arg| arg}
       @csv.stub(:apply_reject_lines) {|arg| arg}
+      @csv.stub(:sort_columns) {|arg| arg}
       @csv.stub(:apply_groups) {|arg| arg}
       @csv.stub(:apply_map) {|arg| arg}
     end
@@ -217,6 +295,12 @@ describe Schlepp::Format::Csv do
     it "should call #apply_reject_lines if set" do
       @csv.should_receive(:apply_reject_lines).with(:test).and_return(:test)
       @csv.reject_lines {}
+      @csv.process_file(:test)
+    end
+
+    it "should call #sort_columns" do
+      @csv.sort_on = [0]
+      @csv.should_receive(:sort_columns).with(:test)
       @csv.process_file(:test)
     end
 

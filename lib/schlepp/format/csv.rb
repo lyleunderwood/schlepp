@@ -25,6 +25,9 @@ module Schlepp
       # order of trunk to leaves
       attr_accessor :groups
 
+      # array of columns to sort on before grouping
+      attr_accessor :sort_on
+
       # options hash to be passed to CSV#parse
       attr_accessor :csv_options
 
@@ -80,7 +83,7 @@ module Schlepp
       end
 
       # takes a line and our @mapping, returns a hash of the map keys to the
-      # values from the line. +group+ specifies a specific group to map the 
+      # values from the line. +group+ specifies a specific group to map the
       # line to. +group+ = nil assumes that the root of @mapping is a valid
       # group.
       def apply_mapping(line, group = nil) # :nodoc:
@@ -102,7 +105,7 @@ module Schlepp
         nil
       end
 
-      # return an array of Item objects for each group after +group+ given 
+      # return an array of Item objects for each group after +group+ given
       # +line+.
       def build_items(line, group = 0) # :nodoc:
         items = []
@@ -143,8 +146,12 @@ module Schlepp
             items[offset].children << item if offset > -1
           end
         end
-        
+
         final
+      end
+
+      def sort_columns(data)
+        data.sort_by! {|obj| obj.values_at(*sort_on)}
       end
 
       def apply_map(items) # :nodoc:
@@ -155,6 +162,7 @@ module Schlepp
       def process_file(data)
         data = parse(data)
         data = apply_reject_lines(data) if @reject_lines
+        data = sort_columns(data) if @sort_on
         data = apply_groups(data) if @groups
         apply_map(data) if @map
       end
