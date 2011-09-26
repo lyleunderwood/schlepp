@@ -72,9 +72,9 @@ module Schlepp
       # runs a string through the CSV parser.
       def parse(data) # :nodoc:
         if @csv_options.nil?
-          CSV.parse(data)
+          CSV.parse(data).to_a
         else
-          CSV.parse(data, @csv_options)
+          CSV.parse(data, @csv_options).to_a
         end
       end
 
