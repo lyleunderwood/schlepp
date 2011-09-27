@@ -25,6 +25,10 @@ module Schlepp
       # order of trunk to leaves
       attr_accessor :groups
 
+      # should be an option (:all, :only, :except) followed by an array of column numbers to strip whitespace from
+      # ex :only => [5, 2, 6, 3]
+      attr_accessor :strip
+
       # array of columns to sort on before grouping
       attr_accessor :sort_on
 
@@ -35,7 +39,7 @@ module Schlepp
       def initialize(&block)
         @mapping = nil
         @csv_options = nil
-
+        @strip = {}
         super
       end
 
@@ -72,9 +76,26 @@ module Schlepp
       # runs a string through the CSV parser.
       def parse(data) # :nodoc:
         if @csv_options.nil?
-          CSV.parse(data)
+          CSV.parse(data).to_a
         else
-          CSV.parse(data, @csv_options)
+          CSV.parse(data, @csv_options).to_a
+        end
+      end
+
+      # runs through the parsed data and strips whitespace off the columns
+      def strip_columns(data)
+        data.each do |line|
+          if strip[:all]
+            line.each {|value| value.strip! if value}
+          elsif strip[:only]
+            strip[:only].each {|column| line[column].strip! if line[column]}
+          elsif strip[:except]
+            line.each_with_index do |value, index| 
+              if value
+                value.strip! unless strip[:except].include?(index) 
+              end
+            end
+          end
         end
       end
 

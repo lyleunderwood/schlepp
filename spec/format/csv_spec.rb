@@ -15,6 +15,11 @@ describe Schlepp::Format::Csv do
     @csv.mapping.should eql :test
   end
 
+  it "should have a @strip attribute" do
+    @csv.strip = :test
+    @csv.strip.should eql :test
+  end
+
   describe '#initialize' do
     it "should call super" do
       f = Schlepp::Format::Csv.new {}
@@ -75,6 +80,32 @@ describe Schlepp::Format::Csv do
       CSV.should_receive(:parse).with(data, options)
       @csv.csv_options = options
       @csv.parse(data)
+    end
+  end
+
+  describe '#strip_columns' do
+    it "should not strip anything if nothing is set" do
+      @csv.strip_columns([[" a "]]).should == [[" a "]]
+    end
+
+    it "should strip every column if :all is set" do
+      @csv.strip[:all] = true
+       @csv.strip_columns([[" a ", "b ", "   c   "]]).should == [["a", "b", "c"]]
+    end
+
+    it "should only strip :only columns if :only is set" do
+      @csv.strip[:only] = [0, 2]
+      @csv.strip_columns([[" a ", "b ", "   c   "]]).should == [["a", "b ", "c"]]
+    end
+
+    it "should not strip :except columns if :except is set" do
+      @csv.strip[:except] = [0, 2]
+      @csv.strip_columns([[" a ", "b ", "   c   "]]).should == [[" a ", "b", "   c   "]]
+    end
+
+    it "should deal with nil values without coughing" do
+      @csv.strip[:all] = true
+      @csv.strip_columns([[nil, nil, "   c", nil]]).should == [[nil, nil, "c", nil]]
     end
   end
 
