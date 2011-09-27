@@ -41,7 +41,7 @@ module Schlepp
         io
       end
 
-      # block to run before file is read
+      # block to run before file is processed
       def before(&block)
         @before = block
       end
