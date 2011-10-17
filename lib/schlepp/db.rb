@@ -29,6 +29,8 @@ module Schlepp
 
       attr_accessor :name
 
+      attr_accessor :primary_key
+
       attr_accessor :models, :associations
 
       # hooks
@@ -37,9 +39,9 @@ module Schlepp
       def initialize(name, config)
         @models = []
         @associations = {
-          has_many: [], 
-          belongs_to: [], 
-          has_one: [], 
+          has_many: [],
+          belongs_to: [],
+          has_one: [],
           has_many_through: []
         } #etc.
         @name = name
@@ -74,7 +76,7 @@ module Schlepp
           klass = Class::new(ActiveRecord::Base)
           klass.set_table_name(name.to_s)
           klass.set_inheritance_column :ruby_type
-          klass.set_primary_key('id')
+          klass.primary_key = primary_key || 'id'
           # this is because it needs to have a class name
           UserModels.const_set(class_name.intern, klass)
         end
@@ -207,7 +209,7 @@ module Schlepp
         self.init
         @records = @record_fetch ? @record_fetch.call(@model) : @model.all
       end
-      
+
       def process!
         result_records = records
 

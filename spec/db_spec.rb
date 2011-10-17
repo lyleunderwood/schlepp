@@ -1,7 +1,11 @@
 require 'spec_helper'
 
 describe Schlepp::Db do
-  before(:each) { @db = Schlepp::Db.new }
+  before(:each) do
+    @db = Schlepp::Db.new
+    Schlepp::Db::Table.send :remove_const, :UserModels
+    Schlepp::Db::Table.const_set :UserModels, Module.new
+  end
 
   describe '#initialize' do
     it "should pass self to the config block" do
@@ -61,6 +65,13 @@ describe Schlepp::Db do
         @table.init
         ActiveRecord::Base.connection.should be
         @table.model.superclass.should eql ActiveRecord::Base
+      end
+    end
+
+    describe '#primary_key' do
+      it "should set @primary_key" do
+        @table.primary_key = 'some_key_column'
+        @table.instance_variable_get(:@primary_key).should eql 'some_key_column'
       end
     end
 
@@ -185,6 +196,13 @@ describe Schlepp::Db do
         model = @table.build_model
         model.name.should_not eql 'Class'
         model.respond_to?(:arel_table).should be_true
+      end
+
+      it "should set the primary key" do
+        @table.primary_key = 'some_key_column'
+        @table.init
+        model = @table.build_model
+        model.primary_key.should eql 'some_key_column'
       end
     end
 

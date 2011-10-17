@@ -64,7 +64,9 @@ describe Schlepp::Format::Csv do
 
   describe '#parse' do
     it "should parse the data using CSV" do
-      CSV.should_receive(:parse).with(:data).and_return(:result)
+      result = mock
+      result.stub(:to_a) { :result }
+      CSV.should_receive(:parse).with(:data).and_return(result)
       @csv.parse(:data).should eql :result
     end
 
