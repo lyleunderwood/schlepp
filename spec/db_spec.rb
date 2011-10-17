@@ -374,7 +374,7 @@ describe Schlepp::Db do
       end
     end
 
-    describe '#process' do
+    describe '#process!' do
       it "should call @each with rows" do
         executed = 0
         @table.each do |row|
@@ -399,6 +399,11 @@ describe Schlepp::Db do
         @table.after { executed = true }
         @table.process!
         executed.should eql true
+      end
+
+      it "should not ask for records without an @each" do
+        @table.should_not_receive :records
+        @table.process!
       end
     end
 

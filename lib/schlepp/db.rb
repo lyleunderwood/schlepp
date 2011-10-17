@@ -211,10 +211,8 @@ module Schlepp
       end
 
       def process!
-        result_records = records
-
         @before.call(self) if @before
-        result_records.each {|record| @each.call(record) } if @each
+        records.each {|record| @each.call(record) } if @each
         @after.call(self) if @after
       end
     end
