@@ -75,6 +75,13 @@ describe Schlepp::Db do
       end
     end
 
+    describe '#mapping' do
+      it "should set @mapping" do
+        @table.mapping = :true
+        @table.instance_variable_get(:@mapping).should eql :true
+      end
+    end
+
     describe '#model_class_name' do
       it "should guess the proper name of the @model to be" do
         @table.model_class_name.should eql 'Schlepp::Db::Table::UserModels::Product'
@@ -187,6 +194,19 @@ describe Schlepp::Db do
         opts = {is_true: true}
         @table.belongs_to :product_colors, opts
         @table.associations[:belongs_to].first[:options].should eql opts
+      end
+    end
+
+    describe '#apply_mapping' do
+      it "should setup some aliases" do
+        @table.mapping = {
+          :name => :title,
+          :description => :content
+        }
+
+        model = mock
+        model.should_receive(:alias_attribute).twice
+        @table.build_mapping(model)
       end
     end
 

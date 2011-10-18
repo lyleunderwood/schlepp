@@ -31,6 +31,8 @@ module Schlepp
 
       attr_accessor :primary_key
 
+      attr_accessor :mapping
+
       attr_accessor :models, :associations
 
       # hooks
@@ -91,6 +93,12 @@ module Schlepp
         end
 
         @model
+      end
+
+      def build_mapping(model)
+        @mapping.each_pair do |source, target|
+          model.alias_attribute(target, source)
+        end
       end
 
       def build_associations
