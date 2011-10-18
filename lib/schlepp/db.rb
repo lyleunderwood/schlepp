@@ -79,6 +79,7 @@ module Schlepp
           klass.set_table_name(name.to_s)
           klass.set_inheritance_column :ruby_type
           klass.primary_key = primary_key || 'id'
+          build_mapping(klass) if @mapping
           # this is because it needs to have a class name
           UserModels.const_set(class_name.intern, klass)
         end

@@ -224,6 +224,12 @@ describe Schlepp::Db do
         model = @table.build_model
         model.primary_key.should eql 'some_key_column'
       end
+
+      it "should build the mapping if given" do
+        @table.mapping = :true
+        @table.should_receive(:build_mapping).and_return(:true)
+        @table.build_model
+      end
     end
 
     describe '#build_associations' do
