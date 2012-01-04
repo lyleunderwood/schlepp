@@ -179,10 +179,11 @@ module Schlepp
         items.each {|i| @map.call(i)}
       end
 
-      # run #parse, #apply_reject_lines, #apply_grouping, and #apply_map
+      # run #parse, #apply_reject_lines, #apply_grouping, #strip_columns, and #apply_map
       def process_file(data)
         data = parse(data)
         data = apply_reject_lines(data) if @reject_lines
+        data = strip_columns(data) if @strip
         data = sort_columns(data) if @sort_on
         data = apply_groups(data) if @groups
         apply_map(data) if @map
