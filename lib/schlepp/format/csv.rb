@@ -85,10 +85,10 @@ module Schlepp
       # runs through the parsed data and strips whitespace off the columns
       def strip_columns(data)
         data.each do |line|
-          if strip[:all]
+          if strip.class == Array
+            strip.each {|column| line[column].strip! if line[column]}
+          elsif strip[:all]
             line.each {|value| value.strip! if value}
-          elsif strip[:only]
-            strip[:only].each {|column| line[column].strip! if line[column]}
           elsif strip[:except]
             line.each_with_index do |value, index| 
               if value

@@ -95,8 +95,8 @@ describe Schlepp::Format::Csv do
        @csv.strip_columns([[" a ", "b ", "   c   "]]).should == [["a", "b", "c"]]
     end
 
-    it "should only strip :only columns if :only is set" do
-      @csv.strip[:only] = [0, 2]
+    it "should only strip only columns in array if class is Array" do
+      @csv.strip = [0, 2]
       @csv.strip_columns([[" a ", "b ", "   c   "]]).should == [["a", "b ", "c"]]
     end
 
@@ -318,10 +318,17 @@ describe Schlepp::Format::Csv do
       @csv.stub(:sort_columns) {|arg| arg}
       @csv.stub(:apply_groups) {|arg| arg}
       @csv.stub(:apply_map) {|arg| arg}
+      @csv.stub(:strip_columns) {|arg| arg}
     end
 
     it "should parse the data" do
       @csv.should_receive(:parse).with(:test).and_return(nil)
+      @csv.process_file(:test)
+    end
+
+    it "should call #strip_columns if set" do
+      @csv.should_receive(:strip_columns).with(:test).and_return(:test)
+      @csv.reject_lines {}
       @csv.process_file(:test)
     end
 
@@ -333,19 +340,19 @@ describe Schlepp::Format::Csv do
 
     it "should call #sort_columns" do
       @csv.sort_on = [0]
-      @csv.should_receive(:sort_columns).with(:test)
+      @csv.should_receive(:sort_columns).with(:test).and_return(:test)
       @csv.process_file(:test)
     end
 
     it "should call #apply_groups" do
       @csv.groups = [1]
-      @csv.should_receive(:apply_groups).with(:test)
+      @csv.should_receive(:apply_groups).with(:test).and_return(:test)
       @csv.process_file(:test)
     end
 
     it "should call #apply_map if set" do
       @csv.map {}
-      @csv.should_receive(:apply_map)
+      @csv.should_receive(:apply_map).with(:test).and_return(:test)
       @csv.process_file(:test)
     end
   end
