@@ -14,7 +14,7 @@ Gem::Specification.new do |s|
 
   #s.rubyforge_project = "schlepp"
 
-  s.add_runtime_dependency 'rake', '0.8.7'
+  s.add_runtime_dependency 'rake', '>= 0.8.7'
   s.add_development_dependency 'rspec'
   s.add_development_dependency 'autotest'
   s.add_development_dependency 'activerecord'
