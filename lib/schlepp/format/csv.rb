@@ -88,6 +88,7 @@ module Schlepp
 
       def strip_headers(data)
         data.slice!(0)
+        data
       end
 
       # runs through the parsed data and strips whitespace off the columns
