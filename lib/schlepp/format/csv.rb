@@ -35,8 +35,12 @@ module Schlepp
       # options hash to be passed to CSV#parse
       attr_accessor :csv_options
 
+      # true causes schlepp to skip the first row of headers
+      attr_accessor :has_headers
+
       # takes a config block which gets run through +instance_eval+.
       def initialize(&block)
+        @has_headers = false
         @mapping = nil
         @csv_options = nil
         @strip = {}
@@ -82,6 +86,10 @@ module Schlepp
         end
       end
 
+      def strip_headers(data)
+        data.slice!(0)
+      end
+
       # runs through the parsed data and strips whitespace off the columns
       def strip_columns(data)
         data.each do |line|
@@ -90,9 +98,9 @@ module Schlepp
           elsif strip[:all]
             line.each {|value| value.strip! if value}
           elsif strip[:except]
-            line.each_with_index do |value, index| 
+            line.each_with_index do |value, index|
               if value
-                value.strip! unless strip[:except].include?(index) 
+                value.strip! unless strip[:except].include?(index)
               end
             end
           end
@@ -182,6 +190,7 @@ module Schlepp
       # run #parse, #apply_reject_lines, #apply_grouping, #strip_columns, and #apply_map
       def process_file(data)
         data = parse(data)
+        data = strip_headers(data) if @has_headers
         data = apply_reject_lines(data) if @reject_lines
         data = strip_columns(data) if @strip
         data = sort_columns(data) if @sort_on
