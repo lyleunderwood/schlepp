@@ -1,6 +1,6 @@
-# schlepp makes it easy to normalize data from various sources like CSV. Need 
-# to go from flattened CSV to relational tables? Schlepp provides a 
-# simple DSL for mapping, grouping and importing data from and to various 
+# schlepp makes it easy to normalize data from various sources like CSV. Need
+# to go from flattened CSV to relational tables? Schlepp provides a
+# simple DSL for mapping, grouping and importing data from and to various
 # formats.
 #
 # At least that's the plan. Currently handles access to CSV files.
@@ -9,7 +9,7 @@ require 'schlepp/burden'
 require 'schlepp/railtie' if defined?(Rails)
 
 module Schlepp
-  @formats = ['Csv', 'Binary', 'Xml']
+  @formats = ['Csv', 'Binary', 'Xml', 'Fixed']
 
   class << self
     attr_accessor :formats
