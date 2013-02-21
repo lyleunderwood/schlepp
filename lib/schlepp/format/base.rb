@@ -32,7 +32,7 @@ module Schlepp
 
       # read the file. uses +cwd+ set by Schlepp::Burden#cd. Returns nil if no
       # file is found.
-      def read
+      def read(name)
         return nil unless name
         path = Format.cwd == '' ? name : File.join(Format.cwd, name)
         return nil unless File.exists? path
@@ -54,22 +54,26 @@ module Schlepp
       # throws an error if a required file is not found. runs our before,
       # then process_file, then our after.
       def process!
-        data = read
-        if data.nil?
-          raise "Required file not found: #{File.join(Format.cwd, name)}" if required
-          return
+        datas = Array(name).map do |name|
+          data = read(name)
+          if data.nil?
+            raise "Required file not found: #{File.join(Format.cwd, name)}" if required
+            return
+          end
+
+          data
         end
 
-        @before.call(data) if @before
-        result = process_file(data)
-        @after.call(result) if @after
-      end
+        @before.call(*datas) if @before
+        results = datas.map {|data| process_file(data)}
+        @after.call(*results) if @after
+        end
 
-      # should be implemented by subclasses. handles parsing, mapping, and
-      # grouping. returns the grouped data.
-      def process_file(data)
-        raise "Implement process_file in Schlepp::Format::Base #{__FILE__}"
-      end
+        # should be implemented by subclasses. handles parsing, mapping, and
+        # grouping. returns the grouped data.
+        def process_file(data)
+          raise "Implement process_file in Schlepp::Format::Base #{__FILE__}"
+        end
 
     end
   end
