@@ -98,6 +98,11 @@ module Schlepp
       @on_error = block
     end
 
+    # when burden completes successfully
+    def on_success(&block)
+      @on_success = block
+    end
+
     # run all jobs
     def process!
       @before.call(self) if @before
@@ -105,6 +110,7 @@ module Schlepp
       files.each {|file| process_job(file)}
       dbs.each {|db| process_job(db)}
       @after.call(self) if @after
+      @on_success.call(self) if @on_success
     end
 
     def process_job job
