@@ -111,6 +111,10 @@ module Schlepp
       dbs.each {|db| process_job(db)}
       @after.call(self) if @after
       @on_success.call(self) if @on_success
+
+    rescue Exception
+      # failed outside of a job, so job is nil
+      raise unless @on_error && @on_error.call($!, nil, self) == true
     end
 
     def process_job job
