@@ -1,5 +1,3 @@
-require 'iconv'
-
 module Schlepp
   # a Format is a class which handles reading, parsing, mapping, and grouping a
   # file type (like CSV).
@@ -37,7 +35,7 @@ module Schlepp
         path = Format.cwd == '' ? name : File.join(Format.cwd, name)
         return nil unless File.exists? path
         io = File.open(path)
-        io = Iconv.conv('utf-8', @encoding, io.read) if @encoding
+        io = io.read.encode('utf-8', @encoding, :invalid => :replace, :undef => :replace, :universal_newline => true) if @encoding
         io
       end
 
