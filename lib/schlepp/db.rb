@@ -76,8 +76,8 @@ module Schlepp
         unless UserModels.const_defined?(class_name, false)
           # setting up the model
           klass = Class::new(ActiveRecord::Base)
-          klass.set_table_name(name.to_s)
-          klass.set_inheritance_column :ruby_type
+          klass.table_name = name.to_s
+          klass.inheritance_column = :ruby_type
           klass.primary_key = primary_key || 'id'
           build_mapping(klass) if @mapping
           # this is because it needs to have a class name
