@@ -216,12 +216,17 @@ module Schlepp
         return @records if @records
 
         self.init
-        @records = @record_fetch ? @record_fetch.call(@model) : @model.all
+        @records = @record_fetch ? @record_fetch.call(@model) : @model
       end
 
       def process!
         @before.call(self) if @before
-        records.each {|record| @each.call(record) } if @each
+        total_records = records.count
+        batch = 10000
+        end_of_range = total_records - batch < 0 ? total_records : total_records - batch
+        (0..end_of_range).step(batch) do |start|
+          records.offset(start).limit(batch).each {|record| @each.call(record) } if @each
+        end
         @after.call(self) if @after
       end
     end
