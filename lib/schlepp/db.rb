@@ -223,8 +223,7 @@ module Schlepp
         @before.call(self) if @before
         total_records = records.count
         batch = 10000
-        end_of_range = total_records - batch < 0 ? total_records : total_records - batch
-        (0..end_of_range).step(batch) do |start|
+        (0..total_records).step(batch) do |start|
           records.offset(start).limit(batch).each {|record| @each.call(record) } if @each
         end
         @after.call(self) if @after
