@@ -216,7 +216,9 @@ module Schlepp
         return @records if @records
 
         self.init
-        @records = @record_fetch ? @record_fetch.call(@model) : @model
+
+        # Order by id as lowest priority so batching works
+        @records = @record_fetch ? @record_fetch.call(@model).order('id') : @model.order('id')
       end
 
       def process!
