@@ -111,7 +111,7 @@ module Schlepp
       dbs.each {|db| process_job(db)}
       @after.call(self) if @after
       @on_success.call(self) if @on_success
-
+      print "Memory Usage: #{`ps -o rss= -p #{Process.pid}`.to_i / 1024}mb\n"
     rescue Exception
       # failed outside of a job, so job is nil
       raise unless @on_error && @on_error.call($!, nil, self) == true
