@@ -65,6 +65,16 @@ describe Schlepp::Format::Base do
       @format.process!
     end
 
+    it "should call #retrieve_file_list" do
+      @format.should_receive(:retrieve_file_list).and_return(['test'])
+      @format.process!
+    end
+
+    it "should handle globbed file list" do
+      @format.should_receive(:retrieve_file_list).and_return(['test1', 'test2'])
+      @format.process!
+    end
+
     it "should send the data to process_file" do
       @format.should_receive(:process_file).with(:test).and_return(nil)
       @format.stub(:read) { :test }
@@ -102,6 +112,24 @@ describe Schlepp::Format::Base do
       @format.process!
     end
 
+  end
+
+  describe '#retrieve_file_list' do
+    it "globs dir if sent a hash[:glob]" do
+      @format.name = {glob: 'test*'}
+      Dir.stub(:glob) {['test1', 'test2']}
+      expect(@format.retrieve_file_list).to eq (['test1', 'test2'])
+    end
+
+    it "returns a single file as an array" do
+      @format.name = 'test.txt'
+      expect(@format.retrieve_file_list).to eq(['test.txt'])
+    end
+
+    it "return nil on invalid hash" do
+      @format.name = {wrong_key: 'bad_filename.csv'}
+      expect(@format.retrieve_file_list).to eq (nil)
+    end
   end
 
   describe '#encoding=' do
