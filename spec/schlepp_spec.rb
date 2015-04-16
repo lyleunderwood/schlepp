@@ -2,11 +2,11 @@ require 'spec_helper'
 
 describe Schlepp do
   it "should at least load up correctly" do
-    defined?(Schlepp::Burden).should be_true
+    defined?(Schlepp::Burden).should be_truthy
   end
 
   it "should autoload default formats" do
-    defined?(Schlepp::Format::Csv).should be_true
+    defined?(Schlepp::Format::Csv).should be_truthy
   end
 
   it "should actually work" do
@@ -22,7 +22,7 @@ describe Schlepp do
           csv.reject_lines do |line|
             line.first.nil? || line.first =~ /\s/
           end
-  
+
           csv.map do |item|
             items << item
           end
@@ -52,7 +52,7 @@ describe Schlepp do
           csv.reject_lines do |line|
             line.first.nil? || line.first =~ /\s/
           end
-  
+
           csv.map do |item|
             #items << item
           end

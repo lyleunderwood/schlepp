@@ -32,6 +32,7 @@ module Schlepp
       # file is found.
       def read
         return nil unless name
+        @encoding ||= 'utf-8'
         path = Format.cwd == '' ? name : File.join(Format.cwd, name)
         return nil unless File.exists? path
         io = File.open(path)

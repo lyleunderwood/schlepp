@@ -22,7 +22,7 @@ describe Schlepp::Format::Binary do
       @binary.globs << {path: 'test', block: blk}
       Dir.should_receive(:glob).with('/test').and_return(['one'])
       @binary.process!
-      processed.should be_true
+      processed.should be_truthy
     end
   end
 

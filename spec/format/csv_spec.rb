@@ -69,7 +69,7 @@ describe Schlepp::Format::Csv do
 
   describe '#parse' do
     it "should parse the data using CSV" do
-      result = mock
+      result = double
       result.stub(:to_a) { :result }
       CSV.should_receive(:parse).with(:data).and_return(result)
       @csv.parse(:data).should eql :result
@@ -114,8 +114,8 @@ describe Schlepp::Format::Csv do
   describe '#apply_reject_lines' do
     it "should call #reject on our data " do
       reject = proc {|line| false}
-      data = mock
-      data.should_receive(:reject).with(&reject).and_return(:test)
+      data = double
+      data.should_receive(:reject).with(no_args).and_return(:test)
       @csv.reject_lines(&reject)
       @csv.apply_reject_lines(data)
     end

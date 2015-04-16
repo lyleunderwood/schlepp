@@ -46,14 +46,14 @@ describe Schlepp::Burden do
 
   describe '#file' do
     it "should instantiate a file with the block" do
-      format = mock
+      format = double
       format.should_receive(:new).and_return(format)
       Schlepp::Format.should_receive(:const_get).with('Nothing').and_return(format)
       init_burden.file('Nothing') {}
     end
 
     it "should add the file to the list of files" do
-      format = mock
+      format = double
       format.stub(:new) { :file }
       Schlepp::Format.stub(:const_get) { format }
 
@@ -83,14 +83,14 @@ describe Schlepp::Burden do
 
   describe '#process_job' do
     it "should call process! on the job" do
-      job = mock
+      job = double
       job.should_receive(:process!)
       @burden.process_job(job)
     end
 
     it "should call our @before_each with job" do
-      success = mock
-      job = mock
+      success = double
+      job = double
       processed = false
       job.stub(:process!) { processed = true }
 
@@ -106,8 +106,8 @@ describe Schlepp::Burden do
     end
 
     it "should call our @after_each" do
-      success = mock
-      job = mock
+      success = double
+      job = double
 
       processed = false
       job.stub(:process!) { processed = true; job }
@@ -123,7 +123,7 @@ describe Schlepp::Burden do
   describe '#process_job' do
     it "should process files" do
       b = init_burden
-      file = mock
+      file = double
       b.files << file
       b.should_receive(:process_job).with(file).and_return(nil)
       b.process!
@@ -144,7 +144,7 @@ describe Schlepp::Burden do
 
     it "should process dbs" do
       b = init_burden
-      db = mock
+      db = double
       b.dbs << db
       b.should_receive(:process_job).with(db).and_return(nil)
       b.process!
@@ -152,9 +152,9 @@ describe Schlepp::Burden do
 
     it "should call our @before" do
       processed = false
-      success = mock
+      success = double
       success.should_receive(:called)
-      file = mock
+      file = double
       file.stub(:process!) {processed = true}
       @burden.files << file
       @burden.before {|job| success.called unless processed}
@@ -163,9 +163,9 @@ describe Schlepp::Burden do
 
     it "should call our @after" do
       processed = false
-      success = mock
+      success = double
       success.should_receive(:called)
-      file = mock
+      file = double
       file.stub(:process!) {processed = true}
       @burden.files << file
       @burden.after {|job| success.called if processed}
@@ -173,9 +173,11 @@ describe Schlepp::Burden do
     end
 
     it "should rescue with our @on_error" do
-      success = mock
+      success = double
+      # KNOWN BUG: breaking because burden.rb:115-128
+
       success.should_receive(:called)
-      file = mock
+      file = double
       file.stub(:process!) {raise Exception.new}
       @burden.files << file
       @burden.on_error { success.called }
@@ -184,7 +186,7 @@ describe Schlepp::Burden do
 
     it "should send proper params to @on_error" do
       the_error = Exception.new
-      file = mock
+      file = double
       file.stub(:process!) {raise the_error}
       @burden.files << file
       @burden.on_error do |error, job, burden|
@@ -199,7 +201,7 @@ describe Schlepp::Burden do
 
     it "should continue if @on_error returns true" do
       the_error = Exception.new
-      file = mock
+      file = double
       file.stub(:process!) {raise the_error}
       @burden.files << file
       @burden.on_error do |error, job, burden|
@@ -214,7 +216,7 @@ describe Schlepp::Burden do
 
     it "should not continue if @on_error returns false" do
       the_error = Exception.new
-      file = mock
+      file = double
       file.stub(:process!) {raise the_error}
       @burden.files << file
       @burden.on_error do |error, job, burden|
@@ -231,7 +233,7 @@ describe Schlepp::Burden do
   context "batch jobs" do
     before(:each) do
       Schlepp::Burden.all = []
-      @jobs = [mock, mock]
+      @jobs = [double, double]
       Schlepp::Burden.all = @jobs
     end
 
