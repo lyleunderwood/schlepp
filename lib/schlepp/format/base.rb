@@ -36,7 +36,7 @@ module Schlepp
         path = Format.cwd == '' ? file : File.join(Format.cwd, file)
         return nil unless File.exists? path
         io = File.open(path)
-        io = io.read.encode('utf-8', @encoding, :invalid => :replace, :undef => :replace, :universal_newline => true) if @encoding
+        io = io.read.encode('utf-8', @encoding, :invalid => :replace, :undef => :replace, :universal_newline => true)
         io
       end
 
@@ -69,9 +69,8 @@ module Schlepp
 
       # Glob support to pull file list for processing.
       def retrieve_file_list
-        if name.is_a?(Hash)
-          return nil unless name[:glob]
-          Dir.glob(name[:glob])
+        if name.is_a? Array
+          name.flat_map { |n| Dir.glob(n) }
         else
           [name]
         end
