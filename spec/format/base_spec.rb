@@ -115,8 +115,8 @@ describe Schlepp::Format::Base do
   end
 
   describe '#retrieve_file_list' do
-    it "globs dir if sent a hash[:glob]" do
-      @format.name = {glob: 'test*'}
+    it "globs dir if sent an array" do
+      @format.name = ['test*']
       Dir.stub(:glob) {['test1', 'test2']}
       expect(@format.retrieve_file_list).to eq (['test1', 'test2'])
     end
@@ -126,9 +126,9 @@ describe Schlepp::Format::Base do
       expect(@format.retrieve_file_list).to eq(['test.txt'])
     end
 
-    it "return nil on invalid hash" do
+    it "returns hash as array'd self" do
       @format.name = {wrong_key: 'bad_filename.csv'}
-      expect(@format.retrieve_file_list).to eq (nil)
+      expect(@format.retrieve_file_list).to eq ([{wrong_key: 'bad_filename.csv'}])
     end
   end
 
