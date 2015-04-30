@@ -30,12 +30,13 @@ module Schlepp
 
       # read the file. uses +cwd+ set by Schlepp::Burden#cd. Returns nil if no
       # file is found.
-      def read
-        return nil unless name
-        path = Format.cwd == '' ? name : File.join(Format.cwd, name)
+      def read(file = name)
+        return nil unless file
+        @encoding ||= 'utf-8'
+        path = Format.cwd == '' ? file : File.join(Format.cwd, file)
         return nil unless File.exists? path
         io = File.open(path)
-        io = io.read.encode('utf-8', @encoding, :invalid => :replace, :undef => :replace, :universal_newline => true) if @encoding
+        io = io.read.encode('utf-8', @encoding, :invalid => :replace, :undef => :replace, :universal_newline => true)
         io
       end
 
@@ -52,15 +53,27 @@ module Schlepp
       # throws an error if a required file is not found. runs our before,
       # then process_file, then our after.
       def process!
-        data = read
-        if data.nil?
-          raise "Required file not found: #{File.join(Format.cwd, name)}" if required
-          return
-        end
+       files = retrieve_file_list
+        @before.call if @before
+        files.each do |file|
+          data = read(file)
+          if data.nil?
+            raise "Required file not found: #{File.join(Format.cwd, name)}" if required
+            return
+          end
 
-        @before.call(data) if @before
-        result = process_file(data)
-        @after.call(result) if @after
+          result = process_file(data)
+        end
+        @after.call if @after
+      end
+
+      # Glob support to pull file list for processing.
+      def retrieve_file_list
+        if name.is_a? Array
+          name.flat_map { |n| Dir.glob(n) }
+        else
+          [name]
+        end
       end
 
       # should be implemented by subclasses. handles parsing, mapping, and

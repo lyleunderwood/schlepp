@@ -15,7 +15,7 @@ describe Schlepp::Db do
         config.should be_a Schlepp::Db
       end
 
-      executed.should be_true
+      executed.should be_truthy
     end
   end
 
@@ -136,6 +136,8 @@ describe Schlepp::Db do
         @table.stub(:init)
         @table.model = double
         @result_records = [:record1, :record2]
+        @table.model.stub(:order) { @result_records }
+        @result_records.stub(:order)
         @table.model.stub(:all) { @result_records }
       end
 
@@ -150,10 +152,8 @@ describe Schlepp::Db do
 
       it "should use @record_fetch if given" do
         custom_result = [:custom_record]
-        @table.record_fetch do |model|
-          custom_result
-        end
-
+        custom_result.stub(:order).and_return([:custom_record])
+        @table.record_fetch { |model| custom_result }
         @table.records.should eql custom_result
       end
     end
@@ -204,7 +204,7 @@ describe Schlepp::Db do
           :description => :content
         }
 
-        model = mock
+        model = double
         model.should_receive(:alias_attribute).twice
         @table.build_mapping(model)
       end
@@ -215,7 +215,7 @@ describe Schlepp::Db do
         @table.init
         model = @table.build_model
         model.name.should_not eql 'Class'
-        model.respond_to?(:arel_table).should be_true
+        model.respond_to?(:arel_table).should be_truthy
       end
 
       it "should set the primary key" do
@@ -299,7 +299,7 @@ describe Schlepp::Db do
           }
 
           @table.build_has_many(assoc, @subtable)
-          executed.should be_true
+          executed.should be_truthy
         end
 
         it "should setup a belongs_to on the target" do
@@ -342,7 +342,7 @@ describe Schlepp::Db do
           }
 
           @table.build_has_one(assoc, @subtable)
-          executed.should be_true
+          executed.should be_truthy
         end
 
         it "should setup a belongs_to on the target" do
@@ -385,7 +385,7 @@ describe Schlepp::Db do
           }
 
           @table.build_belongs_to(assoc, @subtable)
-          executed.should be_true
+          executed.should be_truthy
         end
 
         it "should pass options to the relation" do
@@ -427,15 +427,27 @@ describe Schlepp::Db do
         executed.should eql true
       end
 
-      it "should not ask for records without an @each" do
-        @table.should_not_receive :records
+      it "should asks for records twice w/ @each" do
+        arr = [1,3,4]
+        arr.stub(:offset) {arr}
+        arr.stub(:limit) {arr}
+        @table.each { |record| 1 }
+        @table.stub(:records) { arr }
+
+        @table.should_receive(:records).twice
+        @table.process!
+      end
+
+      it 'should asks for records once w/o @each' do
+        @table.stub(:records) { [1, 2, 3] }
+        @table.should_receive(:records)
         @table.process!
       end
     end
 
     it "should work" do
       @table.default_scope do
-        limit(2)
+        lambda { limit(2) }
       end
 
       @table.has_many :product_colors do |product_colors|

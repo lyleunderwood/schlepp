@@ -25,18 +25,25 @@ describe Schlepp::Format::Base do
   end
 
   describe '#read' do
+    before(:each) do
+      data = 'A long string here'
+      io = double
+      File.stub(:open).and_return(io)
+      io.stub(:read).and_return(data)
+    end
+
     it "should get the file data" do
       File.stub(:exists?) { true }
       @format.name = 'test.csv'
-      File.should_receive(:open).with('test.csv').and_return(:true)
-      @format.read.should eql :true
+
+      @format.read.should eql 'A long string here'
     end
 
     it "should use Format.cwd" do
       File.stub(:exists?) { true }
-      @format.name = 'test'
+      @format.name = 'test.csv'
       Schlepp::Format.cwd = 'data/'
-      File.should_receive(:open).with('data/test').and_return(:true)
+      File.should_receive(:open).with('data/test.csv')
       @format.read
     end
 
@@ -46,27 +53,25 @@ describe Schlepp::Format::Base do
 
     it "should apply our encoding" do
       File.stub(:exists?) { true }
-      @format.name = 'test'
-      @format.encoding = 'latin1'
-      data = mock
-      data.stub(:read) {:true}
-      File.stub(:open) {data}
-      Iconv.should_receive(:conv).with('utf-8', 'latin1', :true).and_return(:text)
-      @format.read.should eql :text
-    end
-
-    it "should not bother converting if no encoding specified" do
-      File.stub(:exists?) { true }
-      @format.name = 'test'
-      File.stub(:open) {:true}
-      Iconv.should_receive(:conv).exactly(0).times
-      @format.read.should eql :true
+      @format.name = 'test.csv'
+      @format.encoding = 'ISO-8859-1'
+      @format.read.encoding.to_s.should eq('UTF-8')
     end
   end
 
   describe '#process!' do
     it "should call #read" do
       @format.should_receive(:read).and_return(nil)
+      @format.process!
+    end
+
+    it "should call #retrieve_file_list" do
+      @format.should_receive(:retrieve_file_list).and_return(['test'])
+      @format.process!
+    end
+
+    it "should handle globbed file list" do
+      @format.should_receive(:retrieve_file_list).and_return(['test1', 'test2'])
       @format.process!
     end
 
@@ -89,7 +94,7 @@ describe Schlepp::Format::Base do
 
     it "should call our before" do
       processed = false
-      success = mock
+      success = double
       success.should_receive(:called)
       @format.stub(:process_file) { processed = true }
       @format.before { success.called unless processed }
@@ -99,7 +104,7 @@ describe Schlepp::Format::Base do
 
     it "should call our after" do
       processed = false
-      success = mock
+      success = double
       success.should_receive(:called)
       @format.stub(:process_file) { processed = true }
       @format.after { success.called if processed }
@@ -107,6 +112,24 @@ describe Schlepp::Format::Base do
       @format.process!
     end
 
+  end
+
+  describe '#retrieve_file_list' do
+    it "globs dir if sent an array" do
+      @format.name = ['test*']
+      Dir.stub(:glob) {['test1', 'test2']}
+      expect(@format.retrieve_file_list).to eq (['test1', 'test2'])
+    end
+
+    it "returns a single file as an array" do
+      @format.name = 'test.txt'
+      expect(@format.retrieve_file_list).to eq(['test.txt'])
+    end
+
+    it "returns hash as array'd self" do
+      @format.name = {wrong_key: 'bad_filename.csv'}
+      expect(@format.retrieve_file_list).to eq ([{wrong_key: 'bad_filename.csv'}])
+    end
   end
 
   describe '#encoding=' do
