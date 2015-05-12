@@ -39,14 +39,6 @@ describe Schlepp::Format::Base do
       @format.read.should eql 'A long string here'
     end
 
-    it "should use Format.cwd" do
-      File.stub(:exists?) { true }
-      @format.name = 'test.csv'
-      Schlepp::Format.cwd = 'data/'
-      File.should_receive(:open).with('data/test.csv')
-      @format.read
-    end
-
     it "should return nil when it can't find the file" do
       @format.read.should eql nil
     end
@@ -115,21 +107,27 @@ describe Schlepp::Format::Base do
   end
 
   describe '#retrieve_file_list' do
-    it "globs dir if sent a hash[:glob]" do
-      @format.name = {glob: 'test*'}
+    it "globs dir if sent an array" do
+      @format.name = ['test*']
       Dir.stub(:glob) {['test1', 'test2']}
       expect(@format.retrieve_file_list).to eq (['test1', 'test2'])
     end
 
     it "returns a single file as an array" do
       @format.name = 'test.txt'
+      Schlepp::Format.cwd = ''
+
       expect(@format.retrieve_file_list).to eq(['test.txt'])
     end
 
-    it "return nil on invalid hash" do
-      @format.name = {wrong_key: 'bad_filename.csv'}
-      expect(@format.retrieve_file_list).to eq (nil)
+    it "should use Format.cwd" do
+      @format.name = 'test.csv'
+      Schlepp::Format.cwd = 'data'
+
+      expect(@format.retrieve_file_list).to eq(['data/test.csv'])
     end
+
+
   end
 
   describe '#encoding=' do
