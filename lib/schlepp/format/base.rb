@@ -10,8 +10,7 @@ module Schlepp
 
     class Base
 
-      # the filename
-      # TODO: support filename glob like format.name = :glob => 'data*.csv'
+      # the filename/array (globbed later)
       attr_accessor :name
 
       # defaults to false
@@ -31,11 +30,10 @@ module Schlepp
       # read the file. uses +cwd+ set by Schlepp::Burden#cd. Returns nil if no
       # file is found.
       def read(file = name)
-        return nil unless file
+        return nil unless file && File.exists?(file)
+
         @encoding ||= 'utf-8'
-        path = Format.cwd == '' ? file : File.join(Format.cwd, file)
-        return nil unless File.exists? path
-        io = File.open(path)
+        io = File.open(file)
         io = io.read.encode('utf-8', @encoding, :invalid => :replace, :undef => :replace, :universal_newline => true)
         io
       end
@@ -53,26 +51,31 @@ module Schlepp
       # throws an error if a required file is not found. runs our before,
       # then process_file, then our after.
       def process!
-       files = retrieve_file_list
-        @before.call if @before
-        files.each do |file|
-          data = read(file)
-          if data.nil?
-            raise "Required file not found: #{File.join(Format.cwd, name)}" if required
-            return
-          end
+        files = retrieve_file_list
 
-          result = process_file(data)
+        if files == [] && required
+          raise "Required file(s) not found: #{pathify_file(name)}"
         end
+
+        @before.call if @before
+
+        files.each do |file|
+          process_file(read(file))
+        end
+
         @after.call if @after
       end
 
       # Glob support to pull file list for processing.
       def retrieve_file_list
-        if name.is_a? Array
-          name.flat_map { |n| Dir.glob(n) }
+        Dir.glob(pathify_file(Array(name)))
+      end
+
+      def pathify_file(file)
+        if Format.cwd != ""
+          File.join(Format.cwd, file)
         else
-          [name]
+          file
         end
       end
 

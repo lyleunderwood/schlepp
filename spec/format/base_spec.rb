@@ -39,14 +39,6 @@ describe Schlepp::Format::Base do
       @format.read.should eql 'A long string here'
     end
 
-    it "should use Format.cwd" do
-      File.stub(:exists?) { true }
-      @format.name = 'test.csv'
-      Schlepp::Format.cwd = 'data/'
-      File.should_receive(:open).with('data/test.csv')
-      @format.read
-    end
-
     it "should return nil when it can't find the file" do
       @format.read.should eql nil
     end
@@ -60,22 +52,31 @@ describe Schlepp::Format::Base do
   end
 
   describe '#process!' do
-    it "should call #read" do
-      @format.should_receive(:read).and_return(nil)
+    it "should call #read on each file" do
+      @format.name = 'test.csv'
+      Dir.stub(:glob) { ['test.csv'] }
+      @format.stub(:process_file)
+
+      @format.should_receive(:read)
       @format.process!
     end
 
     it "should call #retrieve_file_list" do
       @format.should_receive(:retrieve_file_list).and_return(['test'])
+      @format.stub(:process_file)
       @format.process!
     end
 
     it "should handle globbed file list" do
       @format.should_receive(:retrieve_file_list).and_return(['test1', 'test2'])
+      @format.stub(:process_file)
       @format.process!
     end
 
     it "should send the data to process_file" do
+      @format.name = 'test.csv'
+      Dir.stub(:glob) { ['test.csv'] }
+
       @format.should_receive(:process_file).with(:test).and_return(nil)
       @format.stub(:read) { :test }
       @format.process!
@@ -104,12 +105,13 @@ describe Schlepp::Format::Base do
 
     it "should call our after" do
       processed = false
-      success = double
-      success.should_receive(:called)
-      @format.stub(:process_file) { processed = true }
-      @format.after { success.called if processed }
-      @format.stub(:read) { :test }
+      after = false
+      @format.after { after = true if processed }
+      @format.stub (:retrieve_file_list) {['test.csv']}
+      @format.stub (:process_file) { processed = true }
       @format.process!
+
+      expect(after).to eq(true)
     end
 
   end
@@ -123,12 +125,18 @@ describe Schlepp::Format::Base do
 
     it "returns a single file as an array" do
       @format.name = 'test.txt'
+      Schlepp::Format.cwd = ''
+      Dir.stub(:glob) {['test.txt']}
+
       expect(@format.retrieve_file_list).to eq(['test.txt'])
     end
 
-    it "returns hash as array'd self" do
-      @format.name = {wrong_key: 'bad_filename.csv'}
-      expect(@format.retrieve_file_list).to eq ([{wrong_key: 'bad_filename.csv'}])
+    it "should use Format.cwd" do
+      @format.name = 'test.csv'
+      Schlepp::Format.cwd = 'data'
+      Dir.stub(:glob) {['data/test.csv']}
+
+      expect(@format.retrieve_file_list).to eq(['data/test.csv'])
     end
   end
 
