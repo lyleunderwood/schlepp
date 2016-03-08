@@ -68,7 +68,7 @@ module Schlepp
 
       # Glob support to pull file list for processing.
       def retrieve_file_list
-        Dir.glob(pathify_file(Array(name)))
+        Dir.glob(Array(name).map {|filename| pathify_file(filename)})
       end
 
       def pathify_file(file)
