@@ -23,11 +23,13 @@ module Schlepp
       end
 
       def process_glob glob
-        Dir.glob(File.join(Format.cwd, glob[:path])).each do |path|
+        path = pathify_file(glob[:path])
+        paths = ENV['AWS_DATA_BUCKET'] ? object_glob([ path ]) : Dir.glob(path)
+
+        paths.each do |path|
           glob[:block].call(path)
         end
       end
-
     end
   end
 end
