@@ -22,12 +22,28 @@ module Schlepp
         @after.call(self) if @after
       end
 
-      def process_glob glob
-        Dir.glob(File.join(Format.cwd, glob[:path])).each do |path|
-          glob[:block].call(path)
+      def copy_s3_to_tmp(path)
+        tmp_path = File.join('tmp/schlepp/binary', path)
+        FileUtils.mkdir_p(File.dirname(tmp_path))
+
+        File.open(tmp_path, 'wb') do |file|
+          data_bucket.objects[path].read { |chunk| file.write(chunk) }
+          tmp_path
         end
       end
 
+      def process_glob glob
+        path = pathify_file(glob[:path])
+        paths = data_bucket ? object_glob([ path ]) : Dir.glob(path)
+
+        paths.each do |path|
+          path = copy_s3_to_tmp(path) if data_bucket && !ENV['NOIMAGES']
+
+          glob[:block].call(path)
+
+          File.delete(path) if data_bucket && !ENV['NOIMAGES']
+        end
+      end
     end
   end
 end

@@ -27,15 +27,35 @@ module Schlepp
         block.call(self)
       end
 
+      def load_data_bucket
+        return nil unless ENV['AWS_DATA_BUCKET']
+        s3 = AWS::S3.new(region: ENV['AWS_DATA_BUCKET_REGION'])
+        bucket = s3.buckets[ENV['AWS_DATA_BUCKET']]
+
+        raise "s3 bucket #{ENV['AWS_DATA_BUCKET']} does not exist" unless bucket.exists?
+        bucket
+      end
+
+      def data_bucket
+        @data_bucket ||= load_data_bucket
+      end
+
+      def read_disk(file)
+        file && File.exists?(file) ? File.open(file).read : nil
+      end
+
+      def read_s3(file)
+        file && data_bucket.objects[file].exists? ? data_bucket.objects[file].read : nil
+      end
+
       # read the file. uses +cwd+ set by Schlepp::Burden#cd. Returns nil if no
       # file is found.
       def read(file = name)
-        return nil unless file && File.exists?(file)
-
         @encoding ||= 'utf-8'
-        io = File.open(file)
-        io = io.read.encode('utf-8', @encoding, :invalid => :replace, :undef => :replace, :universal_newline => true)
-        io
+        data = data_bucket ? read_s3(file) : read_disk(file)
+        return nil if data.nil?
+
+        data.encode('utf-8', @encoding, :invalid => :replace, :undef => :replace, :universal_newline => true)
       end
 
       # block to run before file is processed
@@ -66,9 +86,36 @@ module Schlepp
         @after.call if @after
       end
 
+      def glob_to_regexp(glob)
+        escaped = Regexp.escape(glob)
+          .sub('\*\*', '.*')
+          .sub('\*', '(?:(?!\\/).)*')
+
+        Regexp.new("#{escaped}$")
+      end
+
+      def list_objects(prefix, regexp)
+        data_bucket.objects.with_prefix(prefix)
+          .select { |o| regexp.match(o.key) }
+          .map(&:key)
+      end
+
+      def object_glob(globs)
+        globs.flat_map { |g| list_objects(g.split('*').first, glob_to_regexp(g)) }
+      end
+
+      # Glob support for objects stored in s3
+      def retrieve_object_list(paths)
+        object_list = paths.reject { |n| n.include?('*') }
+        globs = paths.select { |n| n.include?('*') }
+
+        object_list.concat(object_glob(globs))
+      end
+
       # Glob support to pull file list for processing.
       def retrieve_file_list
-        Dir.glob(Array(name).map {|filename| pathify_file(filename)})
+        paths = Array(name).map { |filename| pathify_file(filename) }
+        data_bucket ? retrieve_object_list(paths) : Dir.glob(paths)
       end
 
       def pathify_file(file)

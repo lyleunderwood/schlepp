@@ -43,7 +43,7 @@ module Schlepp
       @files = []
       @dbs   = []
       @globs = []
-      @cwd   = './'
+      @cwd   = ENV['AWS_DATA_BUCKET_PREFIX'] || './'
 
       # call our config block
       instance_eval(&block)
@@ -70,6 +70,7 @@ module Schlepp
     # change the working directory. doesn't actually change cwd, just holds
     # onto this as a path prefix used for filenames and globbing
     def cd(path)
+      path = File.join(ENV['AWS_DATA_BUCKET_PREFIX'], path) if ENV['AWS_DATA_BUCKET_PREFIX']
       @cwd = path
       Schlepp::Format.cwd = path
     end
